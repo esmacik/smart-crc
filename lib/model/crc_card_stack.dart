@@ -17,6 +17,7 @@ class CRCCardStack {
   List<CRCCard> get cards => _cards;
 
   void addCard(CRCCard card) {
+    card.parentStack = this;
     _cards.add(card);
   }
 
