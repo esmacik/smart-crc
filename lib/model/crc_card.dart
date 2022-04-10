@@ -1,13 +1,18 @@
 import 'package:smart_crc/model/crc_card_stack.dart';
 
+import 'package:smart_crc/model/responsibility.dart';
+
 class CRCCard {
+  int id = -1;
   String className;
+  final List<Responsibility> _responsibilities = List.empty(growable: true);
   CRCCardStack? parentStack;
   final List<String> _responsibilities = List.empty(growable: true);
   final List<CRCCard> _collaborators = List.empty(growable: true);
   String note = '';
 
   CRCCard(this.className);
+
   CRCCard.blank(): className = 'New Card';
 
   int get numResponsibilities => _responsibilities.length;

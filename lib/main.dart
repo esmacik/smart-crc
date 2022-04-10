@@ -37,14 +37,14 @@ class _SmartCRCHomePage extends StatelessWidget {
     CRCCardStack cardStack = CRCCardStack.empty('School System');
 
     CRCCard person = CRCCard('Person')
-      ..addResponsibility(responsibility: 'Eat food')
-      ..addResponsibility(responsibility: 'Wake up');
+      ..addResponsibility(responsibility: Responsibility.named("Eat food"))
+      ..addResponsibility(responsibility: Responsibility.named("Wake up"));
     CRCCard instructor = CRCCard('Instructor')
-      ..addResponsibility(responsibility: 'Teach well')
-      ..addResponsibility(responsibility: 'Grade assignments');
+      ..addResponsibility(responsibility: Responsibility.named("Teach well"))
+      ..addResponsibility(responsibility: Responsibility.named("Grade assignments"));
     CRCCard student = CRCCard('Student')
-      ..addResponsibility(responsibility: 'Go to class')
-      ..addResponsibility(responsibility: 'Get A\'s');
+      ..addResponsibility(responsibility: Responsibility.named("Go to class"))
+      ..addResponsibility(responsibility: Responsibility.named("Get As"));
     CRCCard classroom = CRCCard('Classroom')
       ..addResponsibility(responsibility: 'Exist')
       ..addResponsibility(responsibility: 'Be a good temperature');
@@ -55,14 +55,10 @@ class _SmartCRCHomePage extends StatelessWidget {
     student.addCollaborator(person);
     instructor.addCollaborator(student);
     student.addCollaborator(instructor);
-    instructor.addCollaborator(classroom);
-    classroom.addCollaborator(airConditioner);
 
     cardStack.addCard(person);
     cardStack.addCard(instructor);
     cardStack.addCard(student);
-    cardStack.addCard(classroom);
-    cardStack.addCard(airConditioner);
 
     return Scaffold(
       appBar: AppBar(

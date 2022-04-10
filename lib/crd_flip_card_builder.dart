@@ -118,7 +118,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                         title: Text(collaborator.className),
                                         trailing: PopupMenuButton<CRCCard>(
                                           icon: const Icon(Icons.arrow_drop_down),
-                                          itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator && element != widget._crcCard).map((card) {
+                                          itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator).map((card) {
                                             return PopupMenuItem<CRCCard>(
                                               child: Text(card.className),
                                               value: card,
@@ -134,9 +134,9 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                       )
                                     );
                                   }),
-                                  if (widget._crcCard.collaborators.length < widget._crcCard.parentStack!.cards.length - 1) PopupMenuButton<CRCCard>(
+                                  PopupMenuButton<CRCCard>(
                                     icon: Icon(Icons.add),
-                                    itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => !widget._crcCard.collaborators.contains(element) && element != widget._crcCard).map((card) {
+                                    itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => !widget._crcCard.parentStack!.cards.contains(element)).map((card) {
                                       return PopupMenuItem<CRCCard>(
                                         child: Text(card.className),
                                         value: card,

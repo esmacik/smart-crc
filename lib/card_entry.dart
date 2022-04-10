@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'package:smart_crc/crd_flip_card_builder.dart';
+import 'package:smart_crc/model/responsibility.dart';
 
 class CardEntry extends StatefulWidget {
   final CRCCard _crcCard;
@@ -58,7 +59,7 @@ class _CardEntryState extends State<CardEntry> {
               ],
             ),
             child: TextFormField(
-              initialValue: responsibility,
+              initialValue: responsibility.name,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.fitness_center)
@@ -66,7 +67,7 @@ class _CardEntryState extends State<CardEntry> {
               onChanged: (value) {
                 setState(() {
                   int index = widget._crcCard.responsibilities.indexOf(responsibility);
-                  widget._crcCard.responsibilities[index] = value;
+                  widget._crcCard.responsibilities[index].name = value;
                 });
               },
             ),
@@ -77,7 +78,7 @@ class _CardEntryState extends State<CardEntry> {
           icon: const Icon(Icons.add),
           onPressed: () {
             setState(() {
-              widget._crcCard.addResponsibility();
+              widget._crcCard.addResponsibility(responsibility: Responsibility.named("Test"));
             });
           },
         )
