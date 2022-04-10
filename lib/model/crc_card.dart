@@ -6,6 +6,8 @@ class CRCCard {
 
   CRCCard(this.className);
 
+  CRCCard.blank(): className = 'New Card';
+
   int get numResponsibilities => _responsibilities.length;
   int get numCollaborators => _collaborators.length;
 

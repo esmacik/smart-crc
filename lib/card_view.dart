@@ -1,101 +1,59 @@
-import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_crc/crc_card.dart';
+import 'package:smart_crc/model/crc_card.dart';
+import 'package:flutter/services.dart';
+import 'package:smart_crc/crd_flip_card_builder.dart';
 
-class CardView extends StatelessWidget {
-
+class CardView extends StatefulWidget {
   final CRCCard _crcCard;
 
   const CardView(this._crcCard, {Key? key}) : super(key: key);
 
-  static Widget buildCrcFlipCard(CRCCard crcCard) {
-    return AspectRatio(
-      aspectRatio: 5/3,
-      child: FlipCard(
-        fill: Fill.fillBack,
-        front: Card(
-          elevation: 20,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(crcCard.className),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
-                  Text(
-                    'Responsibilities',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline
-                    ),
-                  ),
-                  Text(
-                    'Collaborators',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline
-                    ),
-                  )
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      ...crcCard.responsibilities.map((responsibility) {
-                        return Text(responsibility);
-                      })
-                    ]
-                  ),
-                  Column(
-                    children: [
-                      ...crcCard.collaborators.map((collaborator) {
-                        return Text(collaborator.className);
-                      })
-                    ],
-                  )
-                ],
-              )
-            ],
-          ),
-        ),
-        back: Card(
-          elevation: 20,
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Notes',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline
-                  ),
-                ),
-              ),
-              Text(crcCard.note),
-            ],
-          ),
+  @override
+  State<StatefulWidget> createState() => CardViewState();
+}
+
+class CardViewState extends State<CardView> {
+
+  bool _editingCard = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Icon(_editingCard ? Icons.cancel : Icons.edit),
+        backgroundColor: _editingCard ? Colors.red : null,
+        onPressed: () {
+          setState(() {
+            _editingCard = !_editingCard;
+          });
+        },
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CRCFlipCard(widget._crcCard, CRCFlipCardType.normal),
         )
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: InteractiveViewer(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: buildCrcFlipCard(_crcCard),
-          )
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft
+    ]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown
+    ]);
+    super.dispose();
   }
 }

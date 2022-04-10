@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:smart_crc/crc_card.dart';
-import 'card_view.dart';
+import 'package:smart_crc/model/crc_card.dart';
+import 'package:smart_crc/crd_flip_card_builder.dart';
 
 class CardEntry extends StatefulWidget {
   final CRCCard _crcCard;
   final List<CRCCard> _stack;
 
-  CardEntry(this._stack, int index):
-      _crcCard = _stack[index];
+  CardEntry(this._stack, int index, {Key? key}):
+      _crcCard = _stack[index], super(key: key);
 
   @override
   State<StatefulWidget> createState() => _CardEntryState();
@@ -175,7 +175,7 @@ class _CardEntryState extends State<CardEntry> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CardView.buildCrcFlipCard(widget._crcCard),
+              child: CRCFlipCard(widget._crcCard, CRCFlipCardType.simple),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

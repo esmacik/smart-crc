@@ -1,88 +1,100 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_crc/card_entry.dart';
 import 'package:smart_crc/card_view.dart';
-import 'package:smart_crc/crc_card.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:smart_crc/model/crc_card_stack.dart';
+import 'crd_flip_card_builder.dart';
+import 'package:stacked_card_carousel/stacked_card_carousel.dart';
 
-class CardList extends StatelessWidget {
+import 'model/crc_card.dart';
 
-  final List<CRCCard> _stack = List.empty(growable: true);
+class CardList extends StatefulWidget {
 
-  CardList({Key? key}) : super(key: key);
-  
-  Widget _cardToTile(BuildContext context, CRCCard card) {
-    return Slidable(
-      endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        children: [
-          SlidableAction(
-            backgroundColor: Colors.red,
-            icon: Icons.delete,
-            onPressed: (context) {}
-          ),
-          SlidableAction(
-            icon: Icons.edit,
-            backgroundColor: Colors.blue,
-            onPressed: (context) {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) =>CardEntry(_stack, _stack.indexOf(card)))
-              );
-            }
-          )
-        ],
-      ),
-      child: ListTile(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) {
-            return CardView(card);
-          })
-        ),
-        title: Text(card.className),
-      ),
-    );
-  }
+  final CRCCardStack _stack;
+
+  const CardList(this._stack, {Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _CardListState();
+}
+
+class _CardListState extends State<CardList> {
 
   @override
   Widget build(BuildContext context) {
-    CRCCard person = CRCCard('Person')
-      ..addResponsibility(responsibility: 'Eat food')
-      ..addResponsibility(responsibility: 'Wake up');
-    CRCCard instructor = CRCCard('Instructor')
-      ..addResponsibility(responsibility: 'Teach well')
-      ..addResponsibility(responsibility: 'Grade assignments');
-    CRCCard student = CRCCard('Student')
-      ..addResponsibility(responsibility: 'Go to class')
-      ..addResponsibility(responsibility: 'Get A\'s');
-
-    student.addCollaborator(person);
-    instructor.addCollaborator(student);
-    student.addCollaborator(instructor);
-
-    _stack.add(person);
-    _stack.add(instructor);
-    _stack.add(student);
-
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () => {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) {
-              _stack.add(CRCCard('Here is a brand new CRC Card'));
-              return CardEntry(_stack, _stack.length - 1);
-            })
-          )
-        },
-      ),
       appBar: AppBar(
         title: const Text('CRC Card List'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.info)
+          )
+        ],
       ),
-      body: ListView.separated(
-        itemCount: _stack.length,
-        separatorBuilder: (context, index) => const Divider(),
-        itemBuilder: (context, index) {
-          return _cardToTile(context, _stack[index]);
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          setState(() {
+            widget._stack.addCard(CRCCard.blank());
+          });
         },
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: GridView.count(
+            crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
+            childAspectRatio: 2,
+            children: widget._stack.cards.map((card) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => CardView(card))
+                  );
+                },
+                onLongPress: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return SafeArea(
+                        child: BottomSheet(
+                          onClosing: () {},
+                          builder: (context) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  onTap: () {
+                                    setState(() {
+                                      widget._stack.cards.remove(card);
+                                      Navigator.of(context).pop();
+                                    });
+                                  },
+                                  title: const Text(
+                                    'Delete card',
+                                    style: TextStyle(
+                                      color: Colors.red
+                                    ),
+                                  ),
+                                  leading: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      );
+                    }
+                  );
+                },
+                child: CRCFlipCard(card, CRCFlipCardType.simple)
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
