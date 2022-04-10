@@ -35,7 +35,7 @@ class SmartCRC extends StatelessWidget {
 class _SmartCRCHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    List<CRCCard> stack = List.empty(growable: true);
+    CRCCardStack cardStack = CRCCardStack.empty('School System');
 
     CRCCard person = CRCCard('Person')
       ..addResponsibility(responsibility: Responsibility.named("Eat food"))
@@ -51,11 +51,9 @@ class _SmartCRCHomePage extends StatelessWidget {
     instructor.addCollaborator(student);
     student.addCollaborator(instructor);
 
-    stack.add(person);
-    stack.add(instructor);
-    stack.add(student);
-
-    CRCCardStack cardStack = CRCCardStack('School System', stack);
+    cardStack.addCard(person);
+    cardStack.addCard(instructor);
+    cardStack.addCard(student);
 
     return Scaffold(
       appBar: AppBar(

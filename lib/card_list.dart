@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_crc/card_view.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'crd_flip_card_builder.dart';
-import 'package:stacked_card_carousel/stacked_card_carousel.dart';
-
 import 'model/crc_card.dart';
 
 class CardList extends StatefulWidget {
@@ -27,7 +24,7 @@ class _CardListState extends State<CardList> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.info)
+            icon: const Icon(Icons.info)
           )
         ],
       ),
@@ -42,7 +39,7 @@ class _CardListState extends State<CardList> {
       body: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
           child: GridView.count(
             crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
             childAspectRatio: 2,
