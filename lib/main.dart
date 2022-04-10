@@ -45,14 +45,24 @@ class _SmartCRCHomePage extends StatelessWidget {
     CRCCard student = CRCCard('Student')
       ..addResponsibility(responsibility: 'Go to class')
       ..addResponsibility(responsibility: 'Get A\'s');
+    CRCCard classroom = CRCCard('Classroom')
+      ..addResponsibility(responsibility: 'Exist')
+      ..addResponsibility(responsibility: 'Be a good temperature');
+    CRCCard airConditioner = CRCCard('Air Conditioner')
+      ..addResponsibility(responsibility: 'Make the air cooler')
+      ..addResponsibility(responsibility: 'Don\'t break');
 
     student.addCollaborator(person);
     instructor.addCollaborator(student);
     student.addCollaborator(instructor);
+    instructor.addCollaborator(classroom);
+    classroom.addCollaborator(airConditioner);
 
     cardStack.addCard(person);
     cardStack.addCard(instructor);
     cardStack.addCard(student);
+    cardStack.addCard(classroom);
+    cardStack.addCard(airConditioner);
 
     return Scaffold(
       appBar: AppBar(

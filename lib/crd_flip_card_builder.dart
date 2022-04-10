@@ -26,26 +26,6 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
   void _onCardSwipe(DragUpdateDetails details) {
     if (details.delta.dx.abs() > details.delta.dy.abs()) _flipCardController.toggleCard();
   }
-  
-  Widget _collaboratorDropdownMenuBuilder(BuildContext context, {CRCCard? omit}) {
-    return PopupMenuButton<CRCCard>(
-      icon: const Icon(Icons.arrow_drop_down),
-      itemBuilder: (context) => [
-        ...widget._crcCard.parentStack!.cards.where((element) => element != omit).map((card) {
-          return PopupMenuItem<CRCCard>(
-            child: Text(card.className),
-            value: card,
-          );
-        })
-      ],
-      onSelected: (card) {
-        setState(() {
-          if (omit != null) widget._crcCard.collaborators.remove(omit);
-          widget._crcCard.collaborators.add(card);
-        });
-      },
-    );
-  }
 
   Widget _buildCRCCardWidget() {
     return GestureDetector(
@@ -138,7 +118,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                         title: Text(collaborator.className),
                                         trailing: PopupMenuButton<CRCCard>(
                                           icon: const Icon(Icons.arrow_drop_down),
-                                          itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator).map((card) {
+                                          itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator && element != widget._crcCard).map((card) {
                                             return PopupMenuItem<CRCCard>(
                                               child: Text(card.className),
                                               value: card,
@@ -154,9 +134,9 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                       )
                                     );
                                   }),
-                                  PopupMenuButton<CRCCard>(
+                                  if (widget._crcCard.collaborators.length < widget._crcCard.parentStack!.cards.length - 1) PopupMenuButton<CRCCard>(
                                     icon: Icon(Icons.add),
-                                    itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => !widget._crcCard.parentStack!.cards.contains(element)).map((card) {
+                                    itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => !widget._crcCard.collaborators.contains(element) && element != widget._crcCard).map((card) {
                                       return PopupMenuItem<CRCCard>(
                                         child: Text(card.className),
                                         value: card,
