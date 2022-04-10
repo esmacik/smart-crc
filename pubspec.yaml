@@ -37,6 +37,7 @@ dependencies:
   flip_card: ^0.6.0
   flutter_slidable: ^1.2.0
   stacked_card_carousel: ^0.0.3-nullsafety.1
+  sqflite: ^2.0.2
 
 dev_dependencies:
   flutter_test:
