@@ -96,7 +96,25 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
   Future<Database> _init() async {
     return await openDatabase(DB_NAME,
         version: 1,
-        onOpen: (db) { print('Database opened.');},//async {await db.execute("DROP TABLE IF EXISTS $TBL_NAME;");},
+        onOpen: (db){print('ok');
+        // await db.execute(
+        //     "CREATE TABLE IF NOT EXISTS stacks ("
+        //         "$KEY_ID INTEGER PRIMARY KEY,"
+        //         "name TEXT"
+        //         ");"
+        // );
+        // await db.execute(
+        //     "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
+        //         "$KEY_ID INTEGER PRIMARY KEY,"
+        //         "$KEY_NAME TEXT,"
+        //         "$KEY_NOTE TEXT,"
+        //         "$KEY_STACK_ID TEXT,"
+        //         "FOREIGN KEY($KEY_STACK_ID) REFERENCES stacks(_id) ON DELETE CASCADE"
+        //         ");"
+        // );
+
+        print('pls');
+        },//async {await db.execute("DROP TABLE IF EXISTS $TBL_NAME;");},
         onCreate: (Database db, int version) async {
           await db.execute(
               "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
@@ -107,6 +125,13 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
                   "FOREIGN KEY($KEY_STACK_ID) REFERENCES stacks(_id) ON DELETE CASCADE"
                   ");"
           );
+          await db.execute(
+              "CREATE TABLE IF NOT EXISTS stacks ("
+                  "$KEY_ID INTEGER PRIMARY KEY,"
+                  "name TEXT,"
+                  ");"
+          );
+          print('naynay');
         }
     );
   }

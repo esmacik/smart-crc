@@ -7,20 +7,23 @@ abstract class STACK_DBWorker {
   static final STACK_DBWorker db = _SqfliteNotesDBWorker._();
 
   /// Create and add the given note in this database.
-  Future<int> create(CRCCardStack stack);
+  Future<int> create(CRCCardStack stack){return db.create(stack);}
 
   /// Update the given note of this database.
   Future<void> update(CRCCardStack stack);
 
   /// Delete the specified note.
-  Future<void> delete(int id);
+  Future<void> delete(int id){return db.delete(id);}
 
   /// Return the specified note, or null.
-  Future<CRCCardStack> get(int id);
+  Future<CRCCardStack> get(int id){return db.get(id);}
 
   /// Return all the notes of this database.
   Future<List<CRCCardStack>> getAll();
-}
+
+  Future<List<String>> getAllTableNames();
+
+  }
 
 class _SqfliteNotesDBWorker implements STACK_DBWorker {
 
@@ -34,6 +37,21 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
 
   Future<Database> get database async => _db ??= await _init();
 
+  Future<List<String>> getAllTableNames() async {
+// you can use your initial name for dbClient
+    List<Map> maps =
+    await _db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
+
+    List<String> tableNameList = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        try {
+          print(maps[i]['name'].toString());
+        } catch (e) {
+        }
+      }
+    }return tableNameList;}
+
   @override
   Future<int> create(CRCCardStack stack) async {
     Database db = await database;
@@ -42,6 +60,7 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
             "VALUES (?)",
         [stack.name]
     );
+    print("Added: $stack, num: $id");
     return id;
   }
 
@@ -90,7 +109,7 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
   Future<Database> _init() async {
     return await openDatabase(DB_NAME,
         version: 1,
-        onOpen: (db) {},
+        onOpen: (db) {print('Stack DB opened.');},
         onCreate: (Database db, int version) async {
           await db.execute(
               "CREATE TABLE IF NOT EXISTS $TBL_NAME ("

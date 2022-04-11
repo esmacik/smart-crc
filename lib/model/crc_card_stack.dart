@@ -1,8 +1,12 @@
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/model/crc_card.dart';
+import 'base_model.dart';
+
+StackModel stackModel = StackModel();
+
 
 class CRCCardStack {
-  int id = -1;
+  var id;
   String name;
   final List<CRCCard> _cards = List.empty(growable: true);
 
@@ -27,4 +31,37 @@ class CRCCardStack {
     CRC_DBWorker.db.delete(_cards.elementAt(index).id);
     _cards.removeAt(index);
   }
+}
+
+class StackModel extends BaseModel<CRCCardStack> {
+  var _stackIndex = 0;
+
+  int get stackIndex => _stackIndex;
+
+  void set stackIndex(int stackIndex) {
+    _stackIndex = stackIndex;
+    notifyListeners();
+  }
+
+  List<CRCCardStack> get cardList => entityList;
+
+  set stackList(List<CRCCardStack> value) {
+    entityList = value;
+  }
+
+  List<CRCCardStack> entityList = [];
+
+  var _entityBeingEdited;
+
+  void setStackIndex(int stackIndex) {
+    this.stackIndex = stackIndex;
+    notifyListeners();
+  }
+
+  get stackBeingEdited => _entityBeingEdited;
+
+  set stackBeingEdited(value) {
+    _entityBeingEdited = value;
+  }
+
 }
