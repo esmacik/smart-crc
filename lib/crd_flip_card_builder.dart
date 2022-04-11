@@ -46,6 +46,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                   child: TextFormField(
                     textAlign: TextAlign.center,
                     initialValue: widget._crcCard.className,
+                    onChanged: (value) => widget._crcCard.className = value,
                   ),
                 ),
                 Divider(
@@ -82,6 +83,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                           Expanded(
                                             child: TextFormField(
                                               initialValue: responsibility.name,
+                                              onChanged: (value) => responsibility.name = value,
                                             ),
                                           ),
                                         ],
@@ -124,26 +126,20 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                   ...widget._crcCard.collaborators.map((collaborator) {
                                     return Row(
                                       children: [
-                                        Expanded(
-                                          child: ListTile(
-                                            horizontalTitleGap: 0,
-                                            title: Text(collaborator.className),
-                                            trailing: PopupMenuButton<CRCCard>(
-                                              icon: const Icon(Icons.arrow_drop_down),
-                                              itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator && !widget._crcCard.collaborators.contains(element)).map((card) {
-                                                return PopupMenuItem<CRCCard>(
-                                                  child: Text(card.className),
-                                                  value: card,
-                                                );
-                                                }).toList(),
-                                              onSelected: (card) {
-                                                setState(() {
-                                                  widget._crcCard.collaborators.remove(collaborator);
-                                                  widget._crcCard.collaborators.add(card);
-                                                });
-                                              },
-                                            ),
-                                          ),
+                                        DropdownButton<CRCCard>(
+                                          value: collaborator,
+                                          items: widget._crcCard.parentStack!.cards.where((element) => element != collaborator && !widget._crcCard.collaborators.contains(element)).map((card) {
+                                            return DropdownMenuItem<CRCCard>(
+                                              child: Text(card.className),
+                                              value: card,
+                                            );
+                                          }).toList(),
+                                          onChanged: (CRCCard? card) {
+                                            setState(() {
+                                              widget._crcCard.collaborators.remove(collaborator);
+                                              widget._crcCard.collaborators.add(card!);
+                                            });
+                                          },
                                         ),
                                       ],
                                     );

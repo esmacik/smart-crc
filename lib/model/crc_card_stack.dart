@@ -23,6 +23,13 @@ class CRCCardStack {
     card.parentStack = this;
   }
 
+  void addAllCards(Iterable<CRCCard> cards) {
+    for (CRCCard card in cards) {
+      _cards.add(card);
+      card.parentStack = this;
+    }
+  }
+
   void removeCard(int index) {
     CRC_DBWorker.db.delete(_cards.elementAt(index).id);
     _cards.removeAt(index);

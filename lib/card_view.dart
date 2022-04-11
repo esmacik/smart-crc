@@ -14,19 +14,13 @@ class CardView extends StatefulWidget {
 
 class CardViewState extends State<CardView> {
 
-  bool _editingCard = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(_editingCard ? Icons.cancel : Icons.edit),
-        backgroundColor: _editingCard ? Colors.red : null,
-        onPressed: () {
-          setState(() {
-            _editingCard = !_editingCard;
-          });
-        },
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
+      floatingActionButton: FloatingActionButton.small(
+        child: const Icon(Icons.navigate_before),
+        onPressed: () => Navigator.of(context).pop(),
       ),
       body: Center(
         child: Padding(
