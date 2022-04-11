@@ -3,11 +3,12 @@ import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
 
 class CRCCard {
-  int id = -1;
+  var id;
+
+  CRCCardStack? parentStack;
+
   String className;
   final List<Responsibility> _responsibilities = List.empty(growable: true);
-  CRCCardStack? parentStack;
-  final List<String> _responsibilities = List.empty(growable: true);
   final List<CRCCard> _collaborators = List.empty(growable: true);
   String note = '';
 
@@ -25,7 +26,41 @@ class CRCCard {
     _collaborators.add(crcCard);
   }
 
-  void addResponsibility([Responsibility? responsibility]) {
-    _responsibilities.add(responsibility ?? Responsibility.named('New responsibility'));
+  void addResponsibility(Responsibility responsibility){
+
+    _responsibilities.add(responsibility);
   }
+}
+
+class CardModel extends BaseModel<CRCCard> {
+  var _stackIndex = 0;
+
+  int get stackIndex => _stackIndex;
+
+  void set stackIndex(int stackIndex) {
+    _stackIndex = stackIndex;
+    notifyListeners();
+  }
+
+  List<CRCCard> get cardList => entityList;
+
+  set noteList(List<CRCCard> value) {
+    entityList = value;
+  }
+
+  List<CRCCard> entityList = [];
+
+  var _entityBeingEdited;
+
+  void setStackIndex(int stackIndex) {
+    this.stackIndex = stackIndex;
+    notifyListeners();
+  }
+
+  get noteBeingEdited => _entityBeingEdited;
+
+  set noteBeingEdited(value) {
+    _entityBeingEdited = value;
+  }
+
 }
