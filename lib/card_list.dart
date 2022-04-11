@@ -17,26 +17,96 @@ class CardList extends StatefulWidget {
 
 class _CardListState extends State<CardList> {
 
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _cardNameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-
-    //print(cardModel.entityList[10].id.toString());
     return Scaffold(
       appBar: AppBar(
         title: const Text('CRC Card List'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('How-to'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text('Tape a card to view more details and edit.\n'),
+                      Text('Swipe a card to the left or right to flip to the back of the card.\n'),
+                      Text('Long-press a card to delete and share a card.')
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('OK')
+                    )
+                  ],
+                )
+              );
+            },
             icon: const Icon(Icons.info)
           )
         ],
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {
-          setState(() {
-            widget._stack.addCard(CRCCard.blank());
-          });
+        onPressed: () async {
+          CRCCard? newCard = await showDialog<CRCCard>(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Class name'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Enter a unique class name.'),
+                  Form(
+                    key: _formKey,
+                    child: TextFormField(
+                      controller: _cardNameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty || widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
+                          return 'New class name must be unique.'
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _cardNameController.clear();
+                    Navigator.of(context).pop(null);
+                  },
+                  child: Text('Cancel', style: TextStyle(color: Colors.red),)
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      CRCCard newCard = CRCCard(_cardNameController.text);
+                      _cardNameController.clear();
+                      Navigator.of(context).pop(newCard);
+                    }
+                  },
+                  child: Text('Accept')
+                ),
+              ],
+            )
+          );
+
+          if (newCard != null) {
+            setState(() {
+              widget._stack.addCard(newCard);
+            });
+          }
         },
       ),
       body: FutureBuilder<void>(
@@ -45,7 +115,7 @@ class _CardListState extends State<CardList> {
           if (snapshot.connectionState == ConnectionState.done) {
             if(widget._stack.cards.length != cardModel.entityList.length) {
               widget._stack.cards.clear();
-              widget._stack.cards.addAll(cardModel.entityList);
+              widget._stack.addAllCards(cardModel.entityList);
             }
             print("E:"+ cardModel.entityList.toString());
             // print("EL:"+ cardModel.entityList.length.toString());
