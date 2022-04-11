@@ -52,11 +52,14 @@ class _CRCStackListState extends State<CRCStackList> {
                     itemBuilder: (context, index) {
                       return ListTile(
                         title: Text(widget._crcCardStacks.elementAt(index).name),
-                        onTap: () => Navigator.of(context).push(
+                        onTap: () { Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (BuildContext context) => CardList(widget._crcCardStacks.elementAt(index))
                           )
-                        ),
+                        );
+
+                        }
+                         // print(index);},
                       );
                     }
                   ),

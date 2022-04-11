@@ -1,4 +1,5 @@
 import 'package:smart_crc/database/CRC_DBWorker.dart';
+import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'base_model.dart';
 

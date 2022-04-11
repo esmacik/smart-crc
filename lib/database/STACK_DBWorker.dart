@@ -21,7 +21,7 @@ abstract class STACK_DBWorker {
   /// Return all the notes of this database.
   Future<List<CRCCardStack>> getAll();
 
-  Future<List<String>> getAllTableNames();
+  //Future<List<String>> getAllTableNames();
 
   }
 
@@ -37,20 +37,20 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
 
   Future<Database> get database async => _db ??= await _init();
 
-  Future<List<String>> getAllTableNames() async {
-// you can use your initial name for dbClient
-    List<Map> maps =
-    await _db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
-
-    List<String> tableNameList = [];
-    if (maps.length > 0) {
-      for (int i = 0; i < maps.length; i++) {
-        try {
-          print(maps[i]['name'].toString());
-        } catch (e) {
-        }
-      }
-    }return tableNameList;}
+//   Future<List<String>> getAllTableNames() async {
+// // you can use your initial name for dbClient
+//     List<Map> maps =
+//     await _db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
+//
+//     List<String> tableNameList = [];
+//     if (maps.length > 0) {
+//       for (int i = 0; i < maps.length; i++) {
+//         try {
+//           print(maps[i]['name'].toString());
+//         } catch (e) {
+//         }
+//       }
+//     }return tableNameList;}
 
   @override
   Future<int> create(CRCCardStack stack) async {
@@ -94,6 +94,7 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
     var values = await db.query(TBL_NAME);
     return values.isNotEmpty ? values.map((m) => _stackFromMap(m)).toList() : [];
   }
+
 
   CRCCardStack _stackFromMap(Map map) {
     return CRCCardStack.empty(map[KEY_NAME])

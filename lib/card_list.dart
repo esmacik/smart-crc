@@ -110,7 +110,7 @@ class _CardListState extends State<CardList> {
         },
       ),
       body: FutureBuilder<void>(
-        future: cardModel.loadData(CRC_DBWorker.db),
+        future: cardModel.loadDataWithForeign(CRC_DBWorker.db,widget._stack.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if(widget._stack.cards.length != cardModel.entityList.length) {

@@ -36,7 +36,6 @@ class SmartCRC extends StatelessWidget {
 class _SmartCRCHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CRCCardStack cardStack = CRCCardStack.empty('School System');
     cardModel.loadData(CRC_DBWorker.db);
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +52,7 @@ class _SmartCRCHomePage extends StatelessWidget {
           child: Text('Begin'),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (BuildContext context) => CRCStackList([cardStack])
+              builder: (BuildContext context) => CRCStackList([])
             )
           ),
         ),
