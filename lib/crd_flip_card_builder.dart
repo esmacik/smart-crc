@@ -72,8 +72,18 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                   ...widget._crcCard.responsibilities.map((responsibility) {
                                     return Padding(
                                       padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-                                      child: TextFormField(
-                                        initialValue: responsibility,
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                                            child: Text('${widget._crcCard.responsibilities.indexOf(responsibility) + 1}.'),
+                                          ),
+                                          Expanded(
+                                            child: TextFormField(
+                                              initialValue: responsibility.name,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     );
                                   }),
@@ -111,32 +121,35 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                               child: ListView(
                                 children: [
                                   ...widget._crcCard.collaborators.map((collaborator) {
-                                    return Padding(
-                                      padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-                                      child: ListTile(
-                                        horizontalTitleGap: 0,
-                                        title: Text(collaborator.className),
-                                        trailing: PopupMenuButton<CRCCard>(
-                                          icon: const Icon(Icons.arrow_drop_down),
-                                          itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator).map((card) {
-                                            return PopupMenuItem<CRCCard>(
-                                              child: Text(card.className),
-                                              value: card,
-                                            );
-                                            }).toList(),
-                                          onSelected: (card) {
-                                            setState(() {
-                                              widget._crcCard.collaborators.remove(collaborator);
-                                              widget._crcCard.collaborators.add(card);
-                                            });
-                                          },
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          child: ListTile(
+                                            horizontalTitleGap: 0,
+                                            title: Text(collaborator.className),
+                                            trailing: PopupMenuButton<CRCCard>(
+                                              icon: const Icon(Icons.arrow_drop_down),
+                                              itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != collaborator && !widget._crcCard.collaborators.contains(element)).map((card) {
+                                                return PopupMenuItem<CRCCard>(
+                                                  child: Text(card.className),
+                                                  value: card,
+                                                );
+                                                }).toList(),
+                                              onSelected: (card) {
+                                                setState(() {
+                                                  widget._crcCard.collaborators.remove(collaborator);
+                                                  widget._crcCard.collaborators.add(card);
+                                                });
+                                              },
+                                            ),
+                                          ),
                                         ),
-                                      )
+                                      ],
                                     );
                                   }),
                                   PopupMenuButton<CRCCard>(
-                                    icon: Icon(Icons.add),
-                                    itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => !widget._crcCard.parentStack!.cards.contains(element)).map((card) {
+                                    icon: const Icon(Icons.add),
+                                    itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => !widget._crcCard.collaborators.contains(element) && element != widget._crcCard).map((card) {
                                       return PopupMenuItem<CRCCard>(
                                         child: Text(card.className),
                                         value: card,

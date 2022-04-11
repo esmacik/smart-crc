@@ -18,14 +18,14 @@ class CRCCard {
   int get numResponsibilities => _responsibilities.length;
   int get numCollaborators => _collaborators.length;
 
-  List<String> get responsibilities => _responsibilities;
+  List<Responsibility> get responsibilities => _responsibilities;
   List<CRCCard> get collaborators => _collaborators;
 
   void addCollaborator(CRCCard crcCard) {
     _collaborators.add(crcCard);
   }
 
-  void addResponsibility({String responsibility = 'New responsibility'}) {
-    _responsibilities.add(responsibility);
+  void addResponsibility([Responsibility? responsibility]) {
+    _responsibilities.add(responsibility ?? Responsibility.named('New responsibility'));
   }
 }

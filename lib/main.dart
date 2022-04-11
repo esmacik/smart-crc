@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_crc/card_list.dart';
 import 'package:smart_crc/crc_stack_list.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'model/crc_card.dart';
+import 'model/responsibility.dart';
 
 void main() {
   runApp(const SmartCRC());
@@ -37,28 +39,32 @@ class _SmartCRCHomePage extends StatelessWidget {
     CRCCardStack cardStack = CRCCardStack.empty('School System');
 
     CRCCard person = CRCCard('Person')
-      ..addResponsibility(responsibility: Responsibility.named("Eat food"))
-      ..addResponsibility(responsibility: Responsibility.named("Wake up"));
+      ..addResponsibility(Responsibility.named("Eat food"))
+      ..addResponsibility(Responsibility.named("Wake up"));
     CRCCard instructor = CRCCard('Instructor')
-      ..addResponsibility(responsibility: Responsibility.named("Teach well"))
-      ..addResponsibility(responsibility: Responsibility.named("Grade assignments"));
+      ..addResponsibility(Responsibility.named("Teach well"))
+      ..addResponsibility(Responsibility.named("Grade assignments"));
     CRCCard student = CRCCard('Student')
-      ..addResponsibility(responsibility: Responsibility.named("Go to class"))
-      ..addResponsibility(responsibility: Responsibility.named("Get As"));
+      ..addResponsibility(Responsibility.named("Go to class"))
+      ..addResponsibility(Responsibility.named("Get As"));
     CRCCard classroom = CRCCard('Classroom')
-      ..addResponsibility(responsibility: 'Exist')
-      ..addResponsibility(responsibility: 'Be a good temperature');
+      ..addResponsibility(Responsibility.named('Exist'))
+      ..addResponsibility(Responsibility.named('Be a good temperature'));
     CRCCard airConditioner = CRCCard('Air Conditioner')
-      ..addResponsibility(responsibility: 'Make the air cooler')
-      ..addResponsibility(responsibility: 'Don\'t break');
+      ..addResponsibility(Responsibility.named('Make the air cooler'))
+      ..addResponsibility(Responsibility.named('Don\'t break'));
 
     student.addCollaborator(person);
     instructor.addCollaborator(student);
     student.addCollaborator(instructor);
+    instructor.addCollaborator(classroom);
+    classroom.addCollaborator(airConditioner);
 
     cardStack.addCard(person);
     cardStack.addCard(instructor);
     cardStack.addCard(student);
+    cardStack.addCard(classroom);
+    cardStack.addCard(airConditioner);
 
     return Scaffold(
       appBar: AppBar(
