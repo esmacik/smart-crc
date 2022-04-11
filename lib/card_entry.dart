@@ -78,7 +78,7 @@ class _CardEntryState extends State<CardEntry> {
           icon: const Icon(Icons.add),
           onPressed: () {
             setState(() {
-              widget._crcCard.addResponsibility(responsibility: Responsibility.named("Test"));
+              widget._crcCard.addResponsibility(Responsibility.named("Test"));
             });
           },
         )

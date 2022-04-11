@@ -2,6 +2,7 @@ import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_crc/model/crc_card.dart';
+import 'package:smart_crc/model/responsibility.dart';
 
 enum CRCFlipCardType {
   normal,
@@ -94,7 +95,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                   IconButton(
                                     onPressed: () {
                                       setState(() {
-                                        widget._crcCard.addResponsibility();
+                                        widget._crcCard.addResponsibility(Responsibility());
                                       });
                                     },
                                     icon: const Icon(Icons.add)
@@ -161,7 +162,6 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                                         widget._crcCard.addCollaborator(widget._crcCard);
                                       });
                                     },
-                                    icon: const Icon(Icons.add)
                                   ),
                                 ],
                               ),

@@ -6,16 +6,16 @@ abstract class CRC_DBWorker {
   static final CRC_DBWorker db = _SqfliteNotesDBWorker._();
 
   /// Create and add the given note in this database.
-  Future<int> create(CRCCard card);
+  Future<int> create(CRCCard card){return db.create(card);}
 
   /// Update the given note of this database.
   Future<void> update(CRCCard card);
 
   /// Delete the specified note.
-  Future<void> delete(int id);
+  Future<void> delete(int id){return db.delete(id);}
 
   /// Return the specified note, or null.
-  Future<CRCCard> get(int id);
+  Future<CRCCard> get(int id){return db.get(id);}
 
   /// Return all the notes of this database.
   Future<List<CRCCard>> getAll();
@@ -28,6 +28,7 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
   static const String KEY_ID = '_id';
   static const String KEY_NAME = 'className';
   static const String KEY_NOTE = 'note';
+  static const String KEY_STACK_ID = 'stack';
 
   var _db;
 
@@ -39,10 +40,11 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
   Future<int> create(CRCCard card) async {
     Database db = await database;
     int id = await db.rawInsert(
-        "INSERT INTO $TBL_NAME ($KEY_NAME, $KEY_NOTE) "
-            "VALUES (?, ?)",
-        [card.className, card.note]
+        "INSERT INTO $TBL_NAME ($KEY_NAME, $KEY_NOTE, $KEY_STACK_ID) "
+            "VALUES (?, ?, ?)",
+        [card.className, card.note, card.parentStack?.id]
     );
+    print("Added: $card, num: $id");
     return id;
   }
 
@@ -94,13 +96,15 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
   Future<Database> _init() async {
     return await openDatabase(DB_NAME,
         version: 1,
-        onOpen: (db) {},
+        onOpen: (db) { print('Database opened.');},//async {await db.execute("DROP TABLE IF EXISTS $TBL_NAME;");},
         onCreate: (Database db, int version) async {
           await db.execute(
               "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
                   "$KEY_ID INTEGER PRIMARY KEY,"
                   "$KEY_NAME TEXT,"
                   "$KEY_NOTE TEXT,"
+                  "$KEY_STACK_ID TEXT,"
+                  "FOREIGN KEY($KEY_STACK_ID) REFERENCES stacks(_id) ON DELETE CASCADE"
                   ");"
           );
         }
