@@ -1,6 +1,8 @@
 import 'package:smart_crc/model/crc_card_stack.dart';
-
 import 'package:smart_crc/model/responsibility.dart';
+import 'base_model.dart';
+
+CardModel cardModel = CardModel();
 
 class CRCCard {
   var id;
