@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:smart_crc/card_list.dart';
 import 'package:smart_crc/crc_stack_list.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
-import 'package:smart_crc/model/responsibility.dart';
 import 'model/crc_card.dart';
 
 void main() {
@@ -13,8 +11,10 @@ void main() {
 class SmartCRC extends StatelessWidget {
   const SmartCRC({Key? key}) : super(key: key);
 
+
   @override
   Widget build(BuildContext context) {
+    cardModel.loadData(CRC_DBWorker.db);
     return MaterialApp(
       title: 'SmartCRC',
       themeMode: ThemeMode.system,

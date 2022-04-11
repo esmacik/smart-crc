@@ -19,7 +19,7 @@ class _CardListState extends State<CardList> {
 
   @override
   Widget build(BuildContext context) {
-    cardModel.loadData(CRC_DBWorker.db);
+
     //print(cardModel.entityList[10].id.toString());
     return Scaffold(
       appBar: AppBar(
@@ -43,10 +43,13 @@ class _CardListState extends State<CardList> {
         future: cardModel.loadData(CRC_DBWorker.db),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            if(widget._stack.cards.length == 0) {
+            if(widget._stack.cards.length != cardModel.entityList.length) {
+              widget._stack.cards.clear();
               widget._stack.cards.addAll(cardModel.entityList);
             }
-            print(widget._stack.cards.length);
+            print("E:"+ cardModel.entityList.toString());
+            // print("EL:"+ cardModel.entityList.length.toString());
+            // print('WL:'+widget._stack.cards.length.toString());
             return SafeArea(
               bottom: false,
               child: Padding(

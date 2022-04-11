@@ -21,7 +21,6 @@ class CRCCardStack {
   void addCard(CRCCard card) {
     CRC_DBWorker.db.create(card);
     card.parentStack = this;
-    _cards.add(card);
   }
 
   void removeCard(int index) {

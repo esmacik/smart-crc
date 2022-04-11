@@ -23,6 +23,5 @@ class BaseModel<T> extends Model {
     entityList.clear();
     entityList.addAll(await database.getAll());
     notifyListeners();
-    print('E:' + entityList.toString());
   }
 }
