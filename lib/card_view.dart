@@ -5,8 +5,9 @@ import 'package:smart_crc/crd_flip_card_builder.dart';
 
 class CardView extends StatefulWidget {
   final CRCCard _crcCard;
+  final CRCFlipCardType _flipCardType;
 
-  const CardView(this._crcCard, {Key? key}) : super(key: key);
+  const CardView(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => CardViewState();
@@ -16,17 +17,30 @@ class CardViewState extends State<CardView> {
 
   @override
   Widget build(BuildContext context) {
+    CRCFlipCard crcFlipCard = CRCFlipCard(widget._crcCard, widget._flipCardType);
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
-      floatingActionButton: FloatingActionButton.small(
-        child: const Icon(Icons.navigate_before),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CRCFlipCard(widget._crcCard, CRCFlipCardType.normal),
-        )
+      body: Stack(
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: crcFlipCard,
+            )
+          ),
+          SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                FloatingActionButton.small(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Icon(Icons.arrow_back),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

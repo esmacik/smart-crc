@@ -176,7 +176,7 @@ class _CardEntryState extends State<CardEntry> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CRCFlipCard(widget._crcCard, CRCFlipCardType.simple),
+              child: CRCFlipCard(widget._crcCard, CRCFlipCardType.static),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
