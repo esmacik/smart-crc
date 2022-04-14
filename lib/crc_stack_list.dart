@@ -121,7 +121,7 @@ class _CRCStackListState extends State<CRCStackList> {
             return SafeArea(
               bottom: false,
               child: GridView.builder(
-                padding: EdgeInsets.fromLTRB(8, 32, 8, 0),
+                padding: EdgeInsets.fromLTRB(8, 32, 8, 8),
                 itemCount: widget._crcCardStacks.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,

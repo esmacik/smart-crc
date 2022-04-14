@@ -264,12 +264,22 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
   }
 
   Widget _buildCRCCardBack([bool editable = false, bool scrollable = false]) {
-    Widget one = SingleChildScrollView(
-      physics: scrollable ? null : const NeverScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(widget._crcCard.note),
-        )
+    Widget one = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(widget._crcCard.note),
+    );
+
+    Widget two = Padding(
+      padding: const EdgeInsets.all(8),
+      child: TextFormField(
+        decoration: const InputDecoration(
+          hintText: 'Enter a note for this class, such as:\n - Required attributes\n - Implementation notes\n - Future changes\n - Superclasses\n - Subclasses'
+        ),
+        initialValue: widget._crcCard.note,
+        minLines: 10,
+        maxLines: 10,
+        onChanged: (value) {},
+      )
     );
     return Card(
       elevation: 20,
@@ -287,7 +297,10 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
             ),
           ),
           Expanded(
-            child: one,
+            child: SingleChildScrollView(
+              physics: scrollable ? null : const NeverScrollableScrollPhysics(),
+              child: two
+            ),
           )
         ],
       ),
@@ -316,7 +329,9 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
       return _buildCRCCard(true);
     } else if (widget._flipCardType == CRCFlipCardType.static) {
       return _buildCRCCard(false, false);
+    } else if (widget._flipCardType == CRCFlipCardType.scrollable) {
+      return _buildCRCCard(false, true);
     }
-    return _buildCRCCard(false, true);
+    return const Center (child: Text('Unsupported CRCFlipCardType.'));
   }
 }

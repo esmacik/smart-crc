@@ -17,16 +17,19 @@ class CardViewState extends State<CardView> {
 
   @override
   Widget build(BuildContext context) {
-    CRCFlipCard crcFlipCard = CRCFlipCard(widget._crcCard, widget._flipCardType);
-
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
       body: Stack(
         children: [
           Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: crcFlipCard,
+            child: SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CRCFlipCard(widget._crcCard, widget._flipCardType),
+                ),
+              ),
             )
           ),
           SafeArea(

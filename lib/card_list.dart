@@ -107,45 +107,49 @@ class _CardListState extends State<CardList> {
     return await showDialog<CRCCard>(
       barrierDismissible: false,
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Class name'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Enter a unique class name.'),
-            Form(
-              key: _formKey,
-              child: TextFormField(
-                controller: _cardNameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty || widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
-                    return 'New class name must be unique.';
+      builder: (context) => Center(
+        child: SingleChildScrollView(
+          child: AlertDialog(
+            title: const Text('Class name'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Enter a unique class name.'),
+                Form(
+                  key: _formKey,
+                  child: TextFormField(
+                    controller: _cardNameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty || widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
+                        return 'New class name must be unique.';
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _cardNameController.clear();
+                  Navigator.of(context).pop(null);
+                },
+                child: const Text('Cancel', style: const TextStyle(color: Colors.red),)
+              ),
+              TextButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    CRCCard newCard = CRCCard(_cardNameController.text);
+                    _cardNameController.clear();
+                    Navigator.of(context).pop(newCard);
                   }
                 },
+                child: const Text('Accept')
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _cardNameController.clear();
-              Navigator.of(context).pop(null);
-            },
-            child: const Text('Cancel', style: const TextStyle(color: Colors.red),)
-          ),
-          TextButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                CRCCard newCard = CRCCard(_cardNameController.text);
-                _cardNameController.clear();
-                Navigator.of(context).pop(newCard);
-              }
-            },
-            child: const Text('Accept')
-          ),
-        ],
       )
     );
   }
@@ -192,7 +196,7 @@ class _CardListState extends State<CardList> {
             return SafeArea(
               bottom: false,
               child: GridView.builder(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
                 itemCount: widget._stack.cards.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
