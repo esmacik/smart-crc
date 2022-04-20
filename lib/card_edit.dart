@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/model/crc_card.dart';
-import 'package:smart_crc/crd_flip_card_builder.dart';
+import 'package:smart_crc/crc_flip_card.dart';
 import 'package:smart_crc/model/responsibility.dart';
 
-class CardEntry extends StatefulWidget {
+class CardEdit extends StatefulWidget {
   final CRCCard _crcCard;
   final List<CRCCard> _stack;
 
-  CardEntry(this._stack, int index, {Key? key}):
+  CardEdit(this._stack, int index, {Key? key}):
       _crcCard = _stack[index], super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _CardEntryState();
+  State<StatefulWidget> createState() => _CardEditState();
 }
 
-class _CardEntryState extends State<CardEntry> {
+class _CardEditState extends State<CardEdit> {
   final _formKey = GlobalKey<FormState>();
 
   Widget _buildClassNameEntry() {
@@ -176,7 +176,7 @@ class _CardEntryState extends State<CardEntry> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: CRCFlipCard(widget._crcCard, CRCFlipCardType.static),
+              child: CRDFlipCard(widget._crcCard, CRCFlipCardType.static),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

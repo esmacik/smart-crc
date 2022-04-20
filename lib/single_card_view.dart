@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'package:flutter/services.dart';
-import 'package:smart_crc/crd_flip_card_builder.dart';
+import 'package:smart_crc/crc_flip_card.dart';
 
-class CardView extends StatefulWidget {
+class SingleCardView extends StatefulWidget {
   final CRCCard _crcCard;
   final CRCFlipCardType _flipCardType;
 
-  const CardView(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
+  const SingleCardView(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => CardViewState();
+  State<StatefulWidget> createState() => _SingleCardViewState();
 }
 
-class CardViewState extends State<CardView> {
+class _SingleCardViewState extends State<SingleCardView> {
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class CardViewState extends State<CardView> {
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: CRCFlipCard(widget._crcCard, widget._flipCardType),
+                  child: CRDFlipCard(widget._crcCard, widget._flipCardType),
                 ),
               ),
             )

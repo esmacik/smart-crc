@@ -10,19 +10,19 @@ enum CRCFlipCardType {
   scrollable
 }
 
-class CRCFlipCard extends StatefulWidget {
+class CRDFlipCard extends StatefulWidget {
 
   final CRCCard _crcCard;
   final CRCFlipCardType _flipCardType;
 
 
-  CRCFlipCard(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
+  CRDFlipCard(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _CRCFlipCardState();
+  State<StatefulWidget> createState() => _CRDFlipCardState();
 }
 
-class _CRCFlipCardState extends State<CRCFlipCard> {
+class _CRDFlipCardState extends State<CRDFlipCard> {
 
   final FlipCardController _flipCardController = FlipCardController();
 
@@ -61,7 +61,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
               ),
               IconButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.delete)
+                  icon: const Icon(Icons.delete_outlined, color: Colors.red)
               )
             ],
           )
@@ -138,7 +138,12 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                       child: Text(card.className),
                       value: card,
                     );
-                  }).toList(),
+                  }).toList()..add(
+                    DropdownMenuItem(
+                      child: Text('New...'),
+                      value: null
+                    )
+                  ),
                   onChanged: (card) {
                     setState(() {
                       widget._crcCard.collaborators.remove(collaborator);
@@ -155,12 +160,23 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                     child: Text("${index+1}"),
                     value: index,
                   );
-                }),
-                onChanged: (index) {}
+                })..add(
+                  DropdownMenuItem<int>(
+                    child: Text('New...'),
+                    value: widget._crcCard.responsibilities.length + 1,
+                  )
+                ),
+                onChanged: (index) {
+                  if (index != null && index >= widget._crcCard.responsibilities.length) {
+                    setState(() {
+                      widget._crcCard.responsibilities.add(Responsibility());
+                    });
+                  }
+                }
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.delete)
+                icon: const Icon(Icons.delete_outlined, color: Colors.red,)
               )
             ],
           )
@@ -264,23 +280,29 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
   }
 
   Widget _buildCRCCardBack([bool editable = false, bool scrollable = false]) {
-    Widget one = Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(widget._crcCard.note),
-    );
 
-    Widget two = Padding(
-      padding: const EdgeInsets.all(8),
-      child: TextFormField(
-        decoration: const InputDecoration(
-          hintText: 'Enter a note for this class, such as:\n - Required attributes\n - Implementation notes\n - Future changes\n - Superclasses\n - Subclasses'
-        ),
-        initialValue: widget._crcCard.note,
-        minLines: 10,
-        maxLines: 10,
-        onChanged: (value) {},
-      )
-    );
+    Widget _selectNoteView(bool editable) {
+      if (editable) {
+        return Padding(
+          padding: const EdgeInsets.all(8),
+          child: TextFormField(
+            decoration: const InputDecoration(
+                hintText: 'Enter a note for this class, such as:\n - Required attributes\n - Implementation notes\n - Future changes\n - Superclasses\n - Subclasses'
+            ),
+            initialValue: widget._crcCard.note,
+            minLines: 10,
+            maxLines: 10,
+            onChanged: (value) {},
+          )
+        );
+      } else {
+        return Padding(
+          padding: const EdgeInsets.all(8),
+          child: Text(widget._crcCard.note.trim().isEmpty ? 'Card notes will be shown here.' :widget._crcCard.note),
+        );
+      }
+    }
+
     return Card(
       elevation: 20,
       child: Column(
@@ -299,7 +321,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
           Expanded(
             child: SingleChildScrollView(
               physics: scrollable ? null : const NeverScrollableScrollPhysics(),
-              child: two
+              child: _selectNoteView(editable)
             ),
           )
         ],

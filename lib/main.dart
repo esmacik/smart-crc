@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_crc/crc_stack_list.dart';
+import 'package:smart_crc/stack_list.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'model/crc_card.dart';
@@ -52,7 +52,7 @@ class _SmartCRCHomePage extends StatelessWidget {
           child: Text('Begin'),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (BuildContext context) => CRCStackList([])
+              builder: (BuildContext context) => StackList([])
             )
           ),
         ),

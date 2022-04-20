@@ -1,5 +1,3 @@
-import 'package:smart_crc/database/CRC_DBWorker.dart';
-import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'base_model.dart';
 
@@ -24,7 +22,7 @@ class CRCCardStack {
   List<CRCCard> get cards => _cards;
 
   void addCard(CRCCard card) {
-    CRC_DBWorker.db.create(card);
+    //CRC_DBWorker.db.create(card);
     card.parentStack = this;
   }
 
@@ -36,7 +34,7 @@ class CRCCardStack {
   }
 
   void removeCard(int index) {
-    CRC_DBWorker.db.delete(_cards.elementAt(index).id);
+    //CRC_DBWorker.db.delete(_cards.elementAt(index).id);
     _cards.removeAt(index);
   }
 }

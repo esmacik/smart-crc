@@ -8,7 +8,6 @@ class CRCCard {
   var id;
 
   CRCCardStack? parentStack;
-
   String className;
   final List<Responsibility> _responsibilities = List.empty(growable: true);
   final List<CRCCard> _collaborators = List.empty(growable: true);

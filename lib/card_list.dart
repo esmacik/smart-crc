@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:smart_crc/card_view.dart';
+import 'package:smart_crc/preferences.dart';
+import 'package:smart_crc/single_card_view.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
-import 'crd_flip_card_builder.dart';
+import 'crc_flip_card.dart';
 import 'database/CRC_DBWorker.dart';
 import 'model/crc_card.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+
+enum CardListType {
+  full,
+  compact
+}
 
 class CardList extends StatefulWidget {
 
@@ -16,18 +23,21 @@ class CardList extends StatefulWidget {
   State<StatefulWidget> createState() => _CardListState();
 }
 
-class _CardListState extends State<CardList> {
+class _CardListState extends State<CardList> with Preferences {
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _cardNameController = TextEditingController();
 
   void _onAddCardButtonPressed(BuildContext context) async {
-    CRCCard? newCard = await _showClassEntryDialog(context);
+    CRCCard? newCard = await _showClassCreationDialog(context);
     if (newCard != null) {
-      setState(() {
-        widget._stack.addCard(newCard);
-      });
+      newCard.parentStack = widget._stack;
+      CRC_DBWorker.db.create(newCard).then((value) => setState(() {}));
     }
+  }
+
+  void _onDeleteButtonPressed(CRCCard card) async {
+    CRC_DBWorker.db.delete(card.id).then((value) => setState(() {}));
   }
 
   void _showHowToDialog(BuildContext context) {
@@ -54,7 +64,7 @@ class _CardListState extends State<CardList> {
     );
   }
 
-  void _showCardLongPressMenu(BuildContext context, CRCCard card) {
+  void _showCardSecondaryMenu(BuildContext context, CRCCard card) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -63,12 +73,12 @@ class _CardListState extends State<CardList> {
             onClosing: () {},
             builder: (context) {
               return ListView(
-                padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
                 shrinkWrap: true,
                 children: [
                   Center(child: Text('${card.className}', textScaleFactor: 2,)),
                   ListTile(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => CardView(card, CRCFlipCardType.editable))),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(card, CRCFlipCardType.editable))),
                     title: const Text('Edit'),
                     leading: const Icon(Icons.edit),
                   ),
@@ -78,12 +88,7 @@ class _CardListState extends State<CardList> {
                     leading: const Icon(Icons.ios_share),
                   ),
                   ListTile(
-                    onTap: () {
-                      setState(() {
-                        widget._stack.removeCard(widget._stack.cards.indexOf(card));
-                        Navigator.of(context).pop();
-                      });
-                    },
+                    onTap: () => _onDeleteButtonPressed(card),
                     title: Text('Delete ${card.className} class',
                       style: const TextStyle(
                           color: Colors.red
@@ -103,7 +108,7 @@ class _CardListState extends State<CardList> {
     );
   }
 
-  Future<CRCCard?> _showClassEntryDialog(BuildContext context) async {
+  Future<CRCCard?> _showClassCreationDialog(BuildContext context) async {
     return await showDialog<CRCCard>(
       barrierDismissible: false,
       context: context,
@@ -121,7 +126,9 @@ class _CardListState extends State<CardList> {
                   child: TextFormField(
                     controller: _cardNameController,
                     validator: (value) {
-                      if (value == null || value.isEmpty || widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Enter a class name.';
+                      } else if (widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
                         return 'New class name must be unique.';
                       }
                     },
@@ -154,17 +161,104 @@ class _CardListState extends State<CardList> {
     );
   }
 
+  Widget _buildFullCardList(CRCCardStack stack) {
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+      itemCount: widget._stack.cards.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 2
+      ),
+      itemBuilder: (context, index) {
+        CRCCard currentCard = widget._stack.getCard(index);
+        return GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(currentCard, CRCFlipCardType.scrollable))),
+          onLongPress: () => _showCardSecondaryMenu(context, currentCard),
+          child: CRDFlipCard(currentCard, CRCFlipCardType.static)
+        );
+      }
+    );
+  }
+
+  Widget _buildCompactCardList(CRCCardStack stack) {
+    return ListView.separated(
+      itemCount: stack.numCards,
+      separatorBuilder: (context, index) {
+        return const Divider();
+      },
+      itemBuilder: (context, index) {
+        CRCCard currentCard = widget._stack.getCard(index);
+        return Slidable(
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                icon: Icons.more_horiz,
+                label: 'More',
+                backgroundColor: Colors.blue,
+                onPressed: (context) => _showCardSecondaryMenu(context, currentCard)
+              )
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+            child: ListTile(
+              title: Text(currentCard.className),
+              subtitle: Text('${currentCard.responsibilities.length} responsibilities\n${currentCard.collaborators.length} collaborators'),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(currentCard, CRCFlipCardType.scrollable))),
+              onLongPress: () => _showCardSecondaryMenu(context, currentCard),
+            ),
+          ),
+        );
+
+      }
+    );
+  }
+
+  Widget _buildCardList(CRCCardStack stack) {
+    if (Preferences.cardListType == CardListType.full) {
+      return _buildFullCardList(stack);
+    } else {
+      return _buildCompactCardList(stack);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      endDrawer: Drawer(
+        child: ListView(
+          children: [
+            SwitchListTile(
+              title: const Text("Use compact card view"),
+              value: Preferences.cardListType == CardListType.compact ? true : false,
+              onChanged: (switchOn) {
+                setState(() => Preferences.cardListType = switchOn ? CardListType.compact: CardListType.full);
+              }
+            )
+          ],
+        ),
+      ),
       appBar: AppBar(
         title: const Text('CRC Card List'),
         actions: [
           IconButton(
             onPressed: () => _showHowToDialog(context),
             icon: const Icon(Icons.info)
+          ),
+          Builder(
+            builder: (context) => IconButton(
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              icon: const Icon(Icons.menu)
+            ),
           )
         ],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -195,24 +289,7 @@ class _CardListState extends State<CardList> {
             print("E:"+ cardModel.entityList.toString());
             return SafeArea(
               bottom: false,
-              child: GridView.builder(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                itemCount: widget._stack.cards.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 2
-                ),
-                itemBuilder: (context, index) {
-                  CRCCard currentCard = widget._stack.getCard(index);
-                  return GestureDetector(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => CardView(currentCard, CRCFlipCardType.scrollable))),
-                    onLongPress: () => _showCardLongPressMenu(context, currentCard),
-                    child: CRCFlipCard(currentCard, CRCFlipCardType.static)
-                  );
-                }
-              ),
+              child: _buildCardList(widget._stack),
             );
           } else {
             return const Center(child: CircularProgressIndicator());
