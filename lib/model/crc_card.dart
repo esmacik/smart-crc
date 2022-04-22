@@ -28,8 +28,8 @@ class CRCCard {
   }
 
   void addResponsibility(Responsibility responsibility){
-
     _responsibilities.add(responsibility);
+
   }
 }
 

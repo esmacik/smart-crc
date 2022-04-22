@@ -78,7 +78,7 @@ class _CardEditState extends State<CardEdit> {
           icon: const Icon(Icons.add),
           onPressed: () {
             setState(() {
-              widget._crcCard.addResponsibility(Responsibility.named("Test"));
+              widget._crcCard.addResponsibility(Responsibility.named(widget._crcCard,"Test"));
             });
           },
         )

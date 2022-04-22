@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/preferences.dart';
 import 'package:smart_crc/single_card_view.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
@@ -49,7 +50,8 @@ class _CardListState extends State<CardList> with Preferences {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            Text('Tape a card to view more details.\n'),
+            Divider(thickness: 1 ,color: Colors.white),
+            Text('Tap a card to view more details.\n'),
             Text('Swipe a card to the left or right to flip the card.\n'),
             Text('Long-press a card to edit, share, and delete.')
           ],
@@ -265,7 +267,7 @@ class _CardListState extends State<CardList> with Preferences {
         onPressed: () async => _onAddCardButtonPressed(context),
       ),
       body: FutureBuilder<void>(
-        future: cardModel.loadDataWithForeign(CRC_DBWorker.db,widget._stack.id),
+        future: Future.wait([cardModel.loadDataWithForeign(CRC_DBWorker.db,widget._stack.id), respModel.loadData(RESP_DBWorker.db)]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if(widget._stack.cards.length != cardModel.entityList.length) {
@@ -273,9 +275,16 @@ class _CardListState extends State<CardList> with Preferences {
               widget._stack.addAllCards(cardModel.entityList);
 
               for (CRCCard card in widget._stack.cards) {
-                card.addResponsibility(Responsibility.named('Go to class'));
-                card.addResponsibility(Responsibility.named('Do homework'));
-                card.addResponsibility(Responsibility.named('Graduate with 4.0'));
+                for(Responsibility r in respModel.entityList){
+                  print('R:'+r.name + ', Rid:' + r.id.toString());
+                  print('C:'+card.id.toString());
+                  if(r.card?.id == card.id){
+                    card.addResponsibility(r);
+                  }
+                }
+                // card.addResponsibility(Responsibility.named(card,'Go to class'));
+                // card.addResponsibility(Responsibility.named(card,'Do homework'));
+                // card.addResponsibility(Responsibility.named(card,'Graduate with 4.0'));
 
                 card.note = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel vehicula arcu. Fusce ut tellus in nisi egestas porttitor. Proin sed justo eleifend metus egestas pulvinar. Integer sit amet tortor egestas, pellentesque nunc eu, semper mi. Morbi elementum dolor vel nulla molestie, eget viverra ipsum tincidunt. Nulla molestie et nisl sit amet efficitur. Donec leo dolor, sollicitudin id mattis iaculis, posuere pretium enim. Mauris eu fringilla orci. Ut molestie pharetra nunc vitae convallis. Vestibulum rhoncus sem magna, at dictum quam aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam rhoncus turpis ac felis porttitor feugiat ac vitae lectus. Nam maximus ullamcorper dui porta facilisis. Pellentesque aliquet quam nec dui tincidunt, vitae auctor nibh tincidunt.\n\n' * 5;
               }

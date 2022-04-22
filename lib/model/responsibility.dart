@@ -1,13 +1,24 @@
+import 'package:smart_crc/model/crc_card.dart';
+
+import 'base_model.dart';
+
+
+RespModel respModel = RespModel();
+
 class Responsibility {
-  int id = -1;
+  var id;
   String _name = "";
+  CRCCard? card;
 
   //Hashmap: Map collaborators to index of responsibility
 
-  Responsibility();
+  Responsibility(CRCCard c) {
+    this.card = c;
+  }
 
-  Responsibility.named( String name){
+  Responsibility.named(CRCCard c, String name){
     this.name = name;
+    this.card = c;
   }
 
   String get name => _name;
@@ -15,6 +26,37 @@ class Responsibility {
   set name(String value) {
     _name = value;
   }
-
-
 }
+
+  class RespModel extends BaseModel<Responsibility> {
+  var _stackIndex = 0;
+
+  int get stackIndex => _stackIndex;
+
+  void set stackIndex(int stackIndex) {
+  _stackIndex = stackIndex;
+  notifyListeners();
+  }
+
+  List<Responsibility> get respList => entityList;
+
+  set noteList(List<Responsibility> value) {
+  entityList = value;
+  }
+
+  List<Responsibility> entityList = [];
+
+  var _entityBeingEdited;
+
+  void setStackIndex(int stackIndex) {
+  this.stackIndex = stackIndex;
+  notifyListeners();
+  }
+
+  get respBeingEdited => _entityBeingEdited;
+
+  set respBeingEdited(value) {
+  _entityBeingEdited = value;
+  }
+
+  }

@@ -1,6 +1,8 @@
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_crc/database/CRC_DBWorker.dart';
+import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'package:smart_crc/model/responsibility.dart';
 
@@ -35,7 +37,10 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
       return TextFormField(
         textAlign: TextAlign.center,
         initialValue: widget._crcCard.className,
-        onChanged: (value) => widget._crcCard.className = value,
+        onChanged: (value) {
+          widget._crcCard.className = value;
+          CRC_DBWorker.db.update(widget._crcCard);
+        }
       );
     }
     return Text(widget._crcCard.className, textScaleFactor: 1.5);
@@ -56,9 +61,15 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
               Expanded(
                 child: TextFormField(
                   initialValue: responsibility.name,
-                  onChanged: (value) => responsibility.name = value,
-                ),
-              ),
+                  onChanged: (value) async {
+                    responsibility.name = value;
+                    print('PLS:' + responsibility.name);
+                    await RESP_DBWorker.db.update(responsibility);
+                    var r = await RESP_DBWorker.db.get(responsibility.id);
+                    print('EH?:'+ r.id.toString());
+                  }
+                    ),
+                    ),
               IconButton(
                   onPressed: () {},
                   icon: const Icon(Icons.delete_outlined, color: Colors.red)
@@ -69,9 +80,12 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
       }
       responsibilitiesElements.add(
         IconButton(
-          onPressed: () {
+          onPressed: () async {
+            Responsibility r = Responsibility(widget._crcCard);
+            var rID = await RESP_DBWorker.db.create(r);
+            print(rID);
             setState(() {
-              widget._crcCard.addResponsibility(Responsibility());
+              widget._crcCard.addResponsibility(r);
             });
           },
           icon: const Icon(Icons.add)
@@ -157,7 +171,7 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
                 value: 0,
                 items: List.generate(widget._crcCard.responsibilities.length, (index) {
                   return DropdownMenuItem<int>(
-                    child: Text("${index+1}"),
+                    child: Text((index+1).toString()),
                     value: index,
                   );
                 })..add(
@@ -169,7 +183,7 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
                 onChanged: (index) {
                   if (index != null && index >= widget._crcCard.responsibilities.length) {
                     setState(() {
-                      widget._crcCard.responsibilities.add(Responsibility());
+                      widget._crcCard.responsibilities.add(Responsibility(widget._crcCard));
                     });
                   }
                 }

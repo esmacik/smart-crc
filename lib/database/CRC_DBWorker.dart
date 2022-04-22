@@ -106,8 +106,26 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
   Future<Database> _init() async {
     return await openDatabase(DB_NAME,
         version: 1,
-        onOpen: (db)async {print('ok');
+        onOpen: (db)async {
+        print('ok');
         await db.execute('PRAGMA foreign_keys = ON');
+        await db.execute(
+            "DROP TABLE IF EXISTS stacks"
+        );
+        await db.execute(
+            "DROP TABLE IF EXISTS responsibilities"
+        );
+        await db.execute(
+            "DROP TABLE IF EXISTS $TBL_NAME"
+        );
+        await db.execute(
+            "CREATE TABLE IF NOT EXISTS responsibilities ("
+                "$KEY_ID INTEGER PRIMARY KEY,"
+                "responsibility TEXT,"
+                "cardID INTEGER,"
+                "FOREIGN KEY(cardID) REFERENCES cards(_id) ON DELETE CASCADE"
+                ");"
+        );
         await db.execute(
             "CREATE TABLE IF NOT EXISTS stacks ("
                 "$KEY_ID INTEGER PRIMARY KEY,"
@@ -123,7 +141,6 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
                 "FOREIGN KEY($KEY_STACK_ID) REFERENCES stacks(_id) ON DELETE CASCADE"
                 ");"
         );
-
         print('pls');
         },//async {await db.execute("DROP TABLE IF EXISTS $TBL_NAME;");},
         onCreate: (Database db, int version) async {
@@ -141,6 +158,14 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
               "CREATE TABLE IF NOT EXISTS stacks ("
                   "$KEY_ID INTEGER PRIMARY KEY,"
                   "name TEXT"
+                  ");"
+          );
+          await db.execute(
+              "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
+                  "$KEY_ID INTEGER PRIMARY KEY,"
+                  "$KEY_NAME TEXT,"
+                  "cardID INTEGER,"
+                  "FOREIGN KEY(cardID) REFERENCES cards(_id) ON DELETE CASCADE"
                   ");"
           );
           print('naynay');

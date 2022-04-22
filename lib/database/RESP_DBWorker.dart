@@ -1,3 +1,4 @@
+import 'package:smart_crc/model/crc_card.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:smart_crc/model/responsibility.dart';
 
@@ -6,20 +7,23 @@ abstract class RESP_DBWorker {
   static final RESP_DBWorker db = _SqfliteNotesDBWorker._();
 
   /// Create and add the given note in this database.
-  Future<int> create(Responsibility r);
+  Future<int> create(Responsibility r){return db.create(r);}
 
   /// Update the given note of this database.
   Future<void> update(Responsibility r);
 
   /// Delete the specified note.
-  Future<void> delete(int id);
+  Future<void> delete(int id){return db.delete(id);}
 
   /// Return the specified note, or null.
-  Future<Responsibility> get(int id);
+  Future<Responsibility> get(int id){return db.get(id);}
 
   /// Return all the notes of this database.
   Future<List<Responsibility>> getAll();
-}
+
+  Future<List<Responsibility>> getAllForCard(int cardID);
+
+  }
 
 class _SqfliteNotesDBWorker implements RESP_DBWorker {
 
@@ -40,9 +44,9 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   Future<int> create(Responsibility r) async {
     Database db = await database;
     int id = await db.rawInsert(
-        "INSERT INTO $TBL_NAME ($KEY_NAME) "
-            "VALUES (?)",
-        [r.name]
+        "INSERT INTO $TBL_NAME ($KEY_NAME, $KEY_CARD) "
+            "VALUES (?, ?)",
+        [r.name, r.card?.id]
     );
     return id;
   }
@@ -54,10 +58,10 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   }
 
   @override
-  Future<void> update(Responsibility card) async {
+  Future<void> update(Responsibility r) async {
     Database db = await database;
-    await db.update(TBL_NAME, _respToMap(card),
-        where: "$KEY_ID = ?", whereArgs: [card.id]);
+    await db.update(TBL_NAME, _respToMap(r),
+        where: "$KEY_ID = ?", whereArgs: [r.id]);
   }
 
   @override
@@ -65,10 +69,17 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
     Database db = await database;
     var values = await db.query(TBL_NAME, where: "$KEY_ID = ?", whereArgs: [id]);
     if (values.isEmpty) {
-      return Responsibility();
+      return Responsibility(CRCCard.blank());
     } else {
       return _respFromMap(values.first);
     }
+  }
+
+  @override
+  Future<List<Responsibility>> getAllForCard(int cardID) async {
+    Database db = await database;
+    var values = await db.query(TBL_NAME, where: "$KEY_CARD = ?", whereArgs: [cardID]);
+    return values.isNotEmpty ? values.map((m) => _respFromMap(m)).toList() : [];
   }
 
   @override
@@ -79,7 +90,7 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   }
 
   Responsibility _respFromMap(Map map) {
-    return Responsibility()
+    return Responsibility(CRCCard.blank())
       ..name = map[KEY_NAME]
       ..id = map[KEY_ID];
   }
