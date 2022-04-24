@@ -80,7 +80,7 @@ class _CardListState extends State<CardList> with Preferences {
                 children: [
                   Center(child: Text('${card.className}', textScaleFactor: 2,)),
                   ListTile(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(card, CRCFlipCardType.editable))),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(card), CRCFlipCardType.editable))),
                     title: const Text('Edit'),
                     leading: const Icon(Icons.edit),
                   ),
@@ -90,7 +90,10 @@ class _CardListState extends State<CardList> with Preferences {
                     leading: const Icon(Icons.ios_share),
                   ),
                   ListTile(
-                    onTap: () => _onDeleteButtonPressed(card),
+                    onTap: () {
+                      _onDeleteButtonPressed(card);
+                      Navigator.of(context).pop();
+                    },
                     title: Text('Delete ${card.className} class',
                       style: const TextStyle(
                           color: Colors.red
@@ -164,23 +167,45 @@ class _CardListState extends State<CardList> with Preferences {
   }
 
   Widget _buildFullCardList(CRCCardStack stack) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-      itemCount: widget._stack.cards.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: 2
-      ),
-      itemBuilder: (context, index) {
-        CRCCard currentCard = widget._stack.getCard(index);
-        return GestureDetector(
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(currentCard, CRCFlipCardType.scrollable))),
-          onLongPress: () => _showCardSecondaryMenu(context, currentCard),
-          child: CRDFlipCard(currentCard, CRCFlipCardType.static)
-        );
-      }
+    if (stack.cards.isNotEmpty) {
+      return GridView.builder(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+        itemCount: widget._stack.cards.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 2
+        ),
+        itemBuilder: (context, index) {
+          CRCCard currentCard = widget._stack.getCard(index);
+          return Slidable(
+            endActionPane: _buildCardEndActionPane(context, currentCard),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
+              onLongPress: () => _showCardSecondaryMenu(context, currentCard),
+              child: CRDFlipCard(currentCard, CRCFlipCardType.static)
+            ),
+          );
+        }
+      );
+    } else {
+      return Container();
+    }
+  }
+
+  ActionPane _buildCardEndActionPane(BuildContext context, CRCCard card) {
+    return ActionPane(
+      extentRatio: 1/4,
+      motion: const ScrollMotion(),
+      children: [
+        SlidableAction(
+          icon: Icons.more_horiz,
+          label: 'More',
+          backgroundColor: Colors.blue,
+          onPressed: (context) => _showCardSecondaryMenu(context, card)
+        )
+      ]
     );
   }
 
@@ -193,28 +218,17 @@ class _CardListState extends State<CardList> with Preferences {
       itemBuilder: (context, index) {
         CRCCard currentCard = widget._stack.getCard(index);
         return Slidable(
-          endActionPane: ActionPane(
-            motion: const ScrollMotion(),
-            children: [
-              SlidableAction(
-                icon: Icons.more_horiz,
-                label: 'More',
-                backgroundColor: Colors.blue,
-                onPressed: (context) => _showCardSecondaryMenu(context, currentCard)
-              )
-            ],
-          ),
+          endActionPane: _buildCardEndActionPane(context, currentCard),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
             child: ListTile(
               title: Text(currentCard.className),
               subtitle: Text('${currentCard.responsibilities.length} responsibilities\n${currentCard.collaborators.length} collaborators'),
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(currentCard, CRCFlipCardType.scrollable))),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
               onLongPress: () => _showCardSecondaryMenu(context, currentCard),
             ),
           ),
         );
-
       }
     );
   }
@@ -289,11 +303,11 @@ class _CardListState extends State<CardList> with Preferences {
                 card.note = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel vehicula arcu. Fusce ut tellus in nisi egestas porttitor. Proin sed justo eleifend metus egestas pulvinar. Integer sit amet tortor egestas, pellentesque nunc eu, semper mi. Morbi elementum dolor vel nulla molestie, eget viverra ipsum tincidunt. Nulla molestie et nisl sit amet efficitur. Donec leo dolor, sollicitudin id mattis iaculis, posuere pretium enim. Mauris eu fringilla orci. Ut molestie pharetra nunc vitae convallis. Vestibulum rhoncus sem magna, at dictum quam aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam rhoncus turpis ac felis porttitor feugiat ac vitae lectus. Nam maximus ullamcorper dui porta facilisis. Pellentesque aliquet quam nec dui tincidunt, vitae auctor nibh tincidunt.\n\n' * 5;
               }
 
-              for (CRCCard card in widget._stack.cards) {
-                card.parentStack!.cards.where((element) => element != card).forEach((element) {
-                  card.addCollaborator(element);
-                });
-              }
+              // for (CRCCard card in widget._stack.cards) {
+              //   card.parentStack!.cards.where((element) => element != card).forEach((element) {
+              //     card.addCollaborator(element);
+              //   });
+              // }
             }
             print("E:"+ cardModel.entityList.toString());
             return SafeArea(
