@@ -8,8 +8,7 @@ class CardEdit extends StatefulWidget {
   final CRCCard _crcCard;
   final List<CRCCard> _stack;
 
-  CardEdit(this._stack, int index, {Key? key}):
-      _crcCard = _stack[index], super(key: key);
+  CardEdit(this._stack, int index, {Key? key}): _crcCard = _stack[index], super(key: key);
 
   @override
   State<StatefulWidget> createState() => _CardEditState();

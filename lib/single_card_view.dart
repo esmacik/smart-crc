@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:smart_crc/model/crc_card.dart';
+import 'model/crc_card_stack.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_crc/crc_flip_card.dart';
 
 class SingleCardView extends StatefulWidget {
-  final CRCCard _crcCard;
+  final CRCCardStack _stack;
   final CRCFlipCardType _flipCardType;
 
-  const SingleCardView(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
+  int _cardIndex;
+
+  SingleCardView(this._stack, this._cardIndex, this._flipCardType, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SingleCardViewState();
@@ -27,21 +30,10 @@ class _SingleCardViewState extends State<SingleCardView> {
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: CRDFlipCard(widget._crcCard, widget._flipCardType),
+                  child: CRDFlipCard(widget._stack.cards.elementAt(widget._cardIndex), widget._flipCardType),
                 ),
               ),
             )
-          ),
-          SafeArea(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FloatingActionButton.small(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Icon(Icons.arrow_back),
-                ),
-              ],
-            ),
           ),
         ],
       ),

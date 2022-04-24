@@ -1,6 +1,7 @@
 import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/model/crc_card.dart';
@@ -27,10 +28,6 @@ class CRDFlipCard extends StatefulWidget {
 class _CRDFlipCardState extends State<CRDFlipCard> {
 
   final FlipCardController _flipCardController = FlipCardController();
-
-  void _onCardSwipe(DragUpdateDetails details) {
-    if (details.delta.dx.abs() > details.delta.dy.abs()) _flipCardController.toggleCard();
-  }
   
   Widget _buildClassNameView({required bool editable}) {
     if (editable) {
@@ -52,29 +49,28 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
     if (editable) {
       for (var responsibility in widget._crcCard.responsibilities) {
         responsibilitiesElements.add(
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                child: Text('${widget._crcCard.responsibilities.indexOf(responsibility) + 1}.'),
-              ),
-              Expanded(
-                child: TextFormField(
-                  initialValue: responsibility.name,
-                  onChanged: (value) async {
-                    responsibility.name = value;
-                    print('PLS:' + responsibility.name);
-                    await RESP_DBWorker.db.update(responsibility);
-                    var r = await RESP_DBWorker.db.get(responsibility.id);
-                    print('EH?:'+ r.id.toString());
-                  }
-                    ),
-                    ),
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.delete_outlined, color: Colors.red)
-              )
-            ],
+          Slidable(
+            endActionPane: _buildResponsibilityActionPane(responsibility),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                  child: Text('${widget._crcCard.responsibilities.indexOf(responsibility) + 1}.'),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    initialValue: responsibility.name,
+                    onChanged: (value) async {
+                      responsibility.name = value;
+                      print('PLS:' + responsibility.name);
+                      await RESP_DBWorker.db.update(responsibility);
+                      var r = await RESP_DBWorker.db.get(responsibility.id);
+                      print('EH?:'+ r.id.toString());
+                    }
+                  ),
+                ),
+              ],
+            ),
           )
         );
       }
@@ -141,58 +137,57 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
     if (editable) {
       for (CRCCard collaborator in widget._crcCard.collaborators) {
         collaboratorsEntries.add(
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButton<CRCCard>(
-                  isExpanded: true,
-                  value: collaborator,
-                  items: widget._crcCard.parentStack!.cards.where((element) => element != widget._crcCard).map((card) {
-                    return DropdownMenuItem<CRCCard>(
-                      child: Text(card.className),
-                      value: card,
+          Slidable(
+            endActionPane: _buildCollaboratorActionPane(),
+            child: Row(
+              children: [
+                Expanded(
+                  child: DropdownButton<CRCCard>(
+                    isExpanded: true,
+                    value: collaborator,
+                    items: widget._crcCard.parentStack!.cards.where((element) => element != widget._crcCard).map((card) {
+                      return DropdownMenuItem<CRCCard>(
+                        child: Text(card.className),
+                        value: card,
+                      );
+                    }).toList()..add(
+                      DropdownMenuItem(
+                        child: Text('New...'),
+                        value: null
+                      )
+                    ),
+                    onChanged: (card) {
+                      setState(() {
+                        widget._crcCard.collaborators.remove(collaborator);
+                        widget._crcCard.collaborators.add(card!);
+                      });
+                    },
+                  ),
+                ),
+                const Text(' Responsibility: '),
+                DropdownButton<int>(
+                  value: 0,
+                  items: List.generate(widget._crcCard.responsibilities.length, (index) {
+                    return DropdownMenuItem<int>(
+                      child: Text((index+1).toString()),
+                      value: index,
                     );
-                  }).toList()..add(
-                    DropdownMenuItem(
+                  })..add(
+                    DropdownMenuItem<int>(
                       child: Text('New...'),
-                      value: null
+                      value: widget._crcCard.responsibilities.length + 1,
                     )
                   ),
-                  onChanged: (card) {
-                    setState(() {
-                      widget._crcCard.collaborators.remove(collaborator);
-                      widget._crcCard.collaborators.add(card!);
-                    });
-                  },
-                ),
-              ),
-              const Text(' Responsibility: '),
-              DropdownButton<int>(
-                value: 0,
-                items: List.generate(widget._crcCard.responsibilities.length, (index) {
-                  return DropdownMenuItem<int>(
-                    child: Text((index+1).toString()),
-                    value: index,
-                  );
-                })..add(
-                  DropdownMenuItem<int>(
-                    child: Text('New...'),
-                    value: widget._crcCard.responsibilities.length + 1,
-                  )
-                ),
-                onChanged: (index) {
-                  if (index != null && index >= widget._crcCard.responsibilities.length) {
-                    setState(() {
-                      widget._crcCard.responsibilities.add(Responsibility(widget._crcCard));
-                    });
+                  onChanged: (index) {
+                    if (index != null && index >= widget._crcCard.responsibilities.length) {
+                      setState(() {
+                        widget._crcCard.responsibilities.add(Responsibility(widget._crcCard));
+                      });
+                    }
                   }
-                }
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.delete_outlined, color: Colors.red,)
-              )
-            ],
+                ),
+              ],
+            ),
           )
         );
       }
@@ -259,6 +254,36 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
         ],
         crossAxisAlignment: CrossAxisAlignment.start,
       )
+    );
+  }
+
+  ActionPane _buildResponsibilityActionPane(Responsibility responsibility) {
+    return ActionPane(
+      extentRatio: 1/4,
+      motion: const ScrollMotion(),
+      children: [
+        SlidableAction(
+          label: 'Delete',
+          icon: Icons.delete,
+          backgroundColor: Colors.red,
+          onPressed: (context) {}
+        )
+      ]
+    );
+  }
+
+  ActionPane _buildCollaboratorActionPane() {
+    return ActionPane(
+      extentRatio: 1/4,
+      motion: const ScrollMotion(),
+      children: [
+        SlidableAction(
+          label: 'Delete',
+          icon: Icons.delete,
+          backgroundColor: Colors.red,
+          onPressed: (context) {}
+        )
+      ]
     );
   }
 
@@ -344,17 +369,27 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
   }
 
   Widget _buildCRCCard([bool editable = false, bool scrollable = true]) {
-    return GestureDetector(
-      onPanUpdate: (details) => _onCardSwipe(details),
-      child: AspectRatio(
-        aspectRatio: 6/3,
-        child: FlipCard(
-          controller: _flipCardController,
-          flipOnTouch: false,
-          fill: Fill.fillBack,
-          front: _buildCRCCardFront(editable, scrollable),
-          back: _buildCRCCardBack(editable, scrollable)
-        ),
+    return AspectRatio(
+      aspectRatio: 6/3,
+      child: Stack(
+        children: [
+          FlipCard(
+            controller: _flipCardController,
+            flipOnTouch: false,
+            fill: Fill.fillBack,
+            front: _buildCRCCardFront(editable, scrollable),
+            back: _buildCRCCardBack(editable, scrollable)
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton.small(
+                onPressed: () => _flipCardController.toggleCard(),
+                child: Icon(Icons.flip),
+              )
+            ],
+          )
+        ],
       ),
     );
   }
