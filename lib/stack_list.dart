@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/card_list.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
+import 'package:share_plus/share_plus.dart';
 import 'dart:math';
 
 import 'package:smart_crc/preferences.dart';
@@ -84,7 +87,9 @@ class _StackListState extends State<StackList> with Preferences {
                     title: const Text('Rename'),
                   ),
                   ListTile(
-                    onTap: () {},
+                    onTap: () {
+                      Share.share(jsonEncode(stack.toMap()));
+                    },
                     leading: const Icon(Icons.ios_share),
                     title: const Text('Share'),
                   ),
@@ -154,7 +159,11 @@ class _StackListState extends State<StackList> with Preferences {
   }
 
   Widget _buildStackList(Iterable<CRCCardStack> stacks) {
-    if (Preferences.stackListType == StackListType.full) {
+    if (stacks.isEmpty) {
+      return const Center(
+        child: Text('Create your first CRC Card Stack with the add button below.'),
+      );
+    } else if (Preferences.stackListType == StackListType.full) {
       return _buildFullStackList(stacks);
     } else {
       return _buildCompactStackList(stacks);

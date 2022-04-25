@@ -8,6 +8,8 @@ import 'crc_flip_card.dart';
 import 'database/CRC_DBWorker.dart';
 import 'model/crc_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:convert';
 
 enum CardListType {
   full,
@@ -85,7 +87,10 @@ class _CardListState extends State<CardList> with Preferences {
                     leading: const Icon(Icons.edit),
                   ),
                   ListTile(
-                    onTap: () {},
+                    onTap: ()async  {
+                       await Share.share(jsonEncode(card.toMap()));
+                      //print(jsonEncode(card.toMap()));
+                    },
                     title: const Text('Share'),
                     leading: const Icon(Icons.ios_share),
                   ),
@@ -184,7 +189,7 @@ class _CardListState extends State<CardList> with Preferences {
             child: GestureDetector(
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
               onLongPress: () => _showCardSecondaryMenu(context, currentCard),
-              child: CRDFlipCard(currentCard, CRCFlipCardType.static)
+              child: CRCFlipCard(currentCard, CRCFlipCardType.static)
             ),
           );
         }
@@ -234,6 +239,11 @@ class _CardListState extends State<CardList> with Preferences {
   }
 
   Widget _buildCardList(CRCCardStack stack) {
+    if (stack.cards.isEmpty) {
+      return const Center(
+        child: Text('Create your first CRC Card with the add button below.'),
+      );
+    }
     if (Preferences.cardListType == CardListType.full) {
       return _buildFullCardList(stack);
     } else {

@@ -13,19 +13,19 @@ enum CRCFlipCardType {
   scrollable
 }
 
-class CRDFlipCard extends StatefulWidget {
+class CRCFlipCard extends StatefulWidget {
 
   final CRCCard _crcCard;
   final CRCFlipCardType _flipCardType;
 
 
-  CRDFlipCard(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
+  CRCFlipCard(this._crcCard, this._flipCardType, {Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _CRDFlipCardState();
+  State<StatefulWidget> createState() => _CRCFlipCardState();
 }
 
-class _CRDFlipCardState extends State<CRDFlipCard> {
+class _CRCFlipCardState extends State<CRCFlipCard> {
 
   final FlipCardController _flipCardController = FlipCardController();
   
@@ -88,20 +88,28 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
         ),
       );
     } else {
-      for (var responsibility in widget._crcCard.responsibilities) {
+      if (widget._crcCard.responsibilities.isEmpty) {
         responsibilitiesElements.add(
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${widget._crcCard.responsibilities.indexOf(responsibility) + 1}. '),
-              Flexible(
-                child: Text(
-                  responsibility.name,
-                )
-              ),
-            ],
+          const Center(
+            child: Text('No Responsibilities.'),
           )
         );
+      } else {
+        for (var responsibility in widget._crcCard.responsibilities) {
+          responsibilitiesElements.add(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${widget._crcCard.responsibilities.indexOf(responsibility) + 1}. '),
+                Flexible(
+                  child: Text(
+                    responsibility.name,
+                  )
+                ),
+              ],
+            )
+          );
+        }
       }
     }
 
@@ -151,7 +159,7 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
                         value: card,
                       );
                     }).toList()..add(
-                      DropdownMenuItem(
+                      const DropdownMenuItem(
                         child: Text('New...'),
                         value: null
                       )
@@ -174,7 +182,7 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
                     );
                   })..add(
                     DropdownMenuItem<int>(
-                      child: Text('New...'),
+                      child: const Text('New...'),
                       value: widget._crcCard.responsibilities.length + 1,
                     )
                   ),
@@ -217,16 +225,24 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
         );
       }
     } else {
-      for (CRCCard collaborator in widget._crcCard.collaborators) {
+      if (widget._crcCard.collaborators.isEmpty) {
         collaboratorsEntries.add(
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${widget._crcCard.collaborators.indexOf(collaborator) + 1}. '),
-              Expanded(child: Text('${collaborator.className} helps fulfill responsibility n.')),
-            ],
+          const Center(
+            child: Text('No collaborators.'),
           )
         );
+      } else {
+        for (CRCCard collaborator in widget._crcCard.collaborators) {
+          collaboratorsEntries.add(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${widget._crcCard.collaborators.indexOf(collaborator) + 1}. '),
+                Expanded(child: Text('${collaborator.className} helps fulfill responsibility n.')),
+              ],
+            )
+          );
+        }
       }
     }
 
@@ -380,14 +396,15 @@ class _CRDFlipCardState extends State<CRDFlipCard> {
             front: _buildCRCCardFront(editable, scrollable),
             back: _buildCRCCardBack(editable, scrollable)
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FloatingActionButton.small(
-                onPressed: () => _flipCardController.toggleCard(),
-                child: Icon(Icons.flip),
-              )
-            ],
+          Align(
+            alignment: Alignment.topRight,
+            child: ElevatedButton(
+              child: Icon(Icons.flip),
+              onPressed: () => _flipCardController.toggleCard(),
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(const CircleBorder())
+              ),
+            ),
           )
         ],
       ),

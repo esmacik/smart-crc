@@ -37,6 +37,12 @@ class CRCCardStack {
     //CRC_DBWorker.db.delete(_cards.elementAt(index).id);
     _cards.removeAt(index);
   }
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'name': name,
+    'cards': _cards.map((card) => card.toMap()).toList()
+  };
 }
 
 class StackModel extends BaseModel<CRCCardStack> {

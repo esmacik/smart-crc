@@ -29,8 +29,16 @@ class CRCCard {
 
   void addResponsibility(Responsibility responsibility){
     _responsibilities.add(responsibility);
-
   }
+
+  Map<String, dynamic> toMap() => {
+    'id' : id,
+    'parentStack' : parentStack?.id,
+    'className': className,
+    'responsibilities': _responsibilities.map((responsibility) => responsibility.toMap()).toList(),
+    'collaborators': _collaborators.map((collaborator) => collaborator.id).toList(),
+    'note': note
+  };
 }
 
 class CardModel extends BaseModel<CRCCard> {

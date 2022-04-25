@@ -12,6 +12,8 @@ class Responsibility {
 
   //Hashmap: Map collaborators to index of responsibility
 
+  Responsibility.fromMap(Map<String, dynamic> map) {}
+
   Responsibility(CRCCard c) {
     this.card = c;
   }
@@ -26,6 +28,12 @@ class Responsibility {
   set name(String value) {
     _name = value;
   }
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'name': name,
+    'card': card?.id
+  };
 }
 
   class RespModel extends BaseModel<Responsibility> {
