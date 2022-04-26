@@ -12,7 +12,9 @@ class Responsibility {
 
   //Hashmap: Map collaborators to index of responsibility
 
-  Responsibility.fromMap(Map<String, dynamic> map) {}
+  Responsibility.fromMap(Map<String, dynamic> map) : id = map['id'], _name = map['name'] {
+    card = null;
+  }
 
   Responsibility(CRCCard c) {
     this.card = c;
@@ -30,6 +32,7 @@ class Responsibility {
   }
 
   Map<String, dynamic> toMap() => {
+    'type': 'responsibility',
     'id': id,
     'name': name,
     'card': card?.id

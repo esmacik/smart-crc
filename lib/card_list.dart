@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
+import 'package:smart_crc/file_writer.dart';
 import 'package:smart_crc/preferences.dart';
 import 'package:smart_crc/single_card_view.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
@@ -26,7 +27,7 @@ class CardList extends StatefulWidget {
   State<StatefulWidget> createState() => _CardListState();
 }
 
-class _CardListState extends State<CardList> with Preferences {
+class _CardListState extends State<CardList> with Preferences, FileWriter {
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _cardNameController = TextEditingController();
@@ -80,16 +81,17 @@ class _CardListState extends State<CardList> with Preferences {
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
                 shrinkWrap: true,
                 children: [
-                  Center(child: Text('${card.className}', textScaleFactor: 2,)),
+                  Center(child: Text(card.className, textScaleFactor: 2,)),
                   ListTile(
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(card), CRCFlipCardType.editable))),
                     title: const Text('Edit'),
                     leading: const Icon(Icons.edit),
                   ),
                   ListTile(
-                    onTap: ()async  {
-                       await Share.share(jsonEncode(card.toMap()));
-                      //print(jsonEncode(card.toMap()));
+                    onTap: () async {
+                      String contents = jsonEncode(card.toMap());
+                      String writtenFilePath = await writeFile('${card.className.replaceAll(' ', '_')}_card', contents);
+                      Share.shareFiles([writtenFilePath]);
                     },
                     title: const Text('Share'),
                     leading: const Icon(Icons.ios_share),

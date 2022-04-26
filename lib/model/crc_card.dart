@@ -17,6 +17,15 @@ class CRCCard {
 
   CRCCard.blank(): className = 'New Card';
 
+  CRCCard.fromMap(Map<String, dynamic> map):
+    id = map['id'],
+    parentStack = null,
+    className = map['className'],
+    note = map['note'] {
+    _responsibilities.addAll((map['responsibilities'] as List<dynamic>).map((e) => Responsibility.fromMap(e)));
+  }
+
+
   int get numResponsibilities => _responsibilities.length;
   int get numCollaborators => _collaborators.length;
 
@@ -32,8 +41,9 @@ class CRCCard {
   }
 
   Map<String, dynamic> toMap() => {
-    'id' : id,
-    'parentStack' : parentStack?.id,
+    'type': 'card',
+    'id': id,
+    'parentStack': parentStack?.id,
     'className': className,
     'responsibilities': _responsibilities.map((responsibility) => responsibility.toMap()).toList(),
     'collaborators': _collaborators.map((collaborator) => collaborator.id).toList(),

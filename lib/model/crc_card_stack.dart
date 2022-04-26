@@ -11,6 +11,10 @@ class CRCCardStack {
 
   CRCCardStack.empty(this.name);
 
+  CRCCardStack.fromMap(Map<String, dynamic> map) : name = map['name'], id = map['id'] {
+    _cards.addAll((map['cards'] as List<Map<String, dynamic>>).map((e) => CRCCard.fromMap(e)));
+  }
+
   CRCCardStack(this.name, Iterable<CRCCard> cards) {
     _cards.addAll(cards);
   }
@@ -39,6 +43,7 @@ class CRCCardStack {
   }
 
   Map<String, dynamic> toMap() => {
+    'type': 'stack',
     'id': id,
     'name': name,
     'cards': _cards.map((card) => card.toMap()).toList()

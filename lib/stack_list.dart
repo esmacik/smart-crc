@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/card_list.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
+import 'package:smart_crc/file_writer.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
@@ -25,7 +26,7 @@ class StackList extends StatefulWidget {
   State<StatefulWidget> createState() => _StackListState();
 }
 
-class _StackListState extends State<StackList> with Preferences {
+class _StackListState extends State<StackList> with Preferences, FileWriter {
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _stackNameController = TextEditingController();
@@ -87,8 +88,10 @@ class _StackListState extends State<StackList> with Preferences {
                     title: const Text('Rename'),
                   ),
                   ListTile(
-                    onTap: () {
-                      Share.share(jsonEncode(stack.toMap()));
+                    onTap: () async {
+                      String contents = jsonEncode(stack.toMap());
+                      String writtenFilePath = await writeFile('${stack.name.replaceAll(' ', '_')}_stack', contents);
+                      Share.shareFiles([writtenFilePath]);
                     },
                     leading: const Icon(Icons.ios_share),
                     title: const Text('Share'),

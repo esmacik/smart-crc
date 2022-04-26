@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smart_crc/model/responsibility.dart';
 import 'package:smart_crc/stack_list.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'model/crc_card.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'dart:convert';
 
 void main() {
   runApp(SmartCRC());
@@ -22,7 +25,7 @@ class SmartCRC extends StatefulWidget {
 class _SmartCRCSate extends State<SmartCRC> {
 
   late StreamSubscription _intentDataStreamSubscription;
-  // List<SharedMediaFile> _sharedFiles;
+  List<SharedMediaFile> _sharedFiles = List.empty(growable: true);
   // String _sharedText;
 
   @override
@@ -45,53 +48,48 @@ class _SmartCRCSate extends State<SmartCRC> {
     );
   }
 
+  Future<void> _insertSharedFilesIntoDatabase(List<SharedMediaFile> files) async {
+    for (SharedMediaFile file in files) {
+      if (file.path.endsWith('.json')) {
+        String fileContents = await File(file.path).readAsString();
+        Map<String, dynamic> mapFromJson = jsonDecode(fileContents);
+        if (mapFromJson['type'] == 'stack') {
+          CRCCardStack stack = CRCCardStack.fromMap(mapFromJson);
+          print('Stack name: ${stack.name}');
+        } else if (mapFromJson['type'] == 'card') {
+          CRCCard card = CRCCard.fromMap(mapFromJson);
+          print('Card name: ${card.className}');
+        } else if (mapFromJson['type'] == 'responsibility') {
+          Responsibility responsibility = Responsibility.fromMap(mapFromJson);
+          print('Responsibility name: ${responsibility.name}');
+        } else {
+          print('Invalid json format.');
+        }
+      } else {
+        print('Shared file is not a json file.');
+      }
+    }
+
+    _sharedFiles.clear();
+  }
+
   @override
   void initState() {
     super.initState();
 
-    // _intentDataStreamSubscription = ReceiveSharingIntent.getTextStream().listen((value) {
-    //   print('Value shared 1: $value');
-    // }, onError: (err) {
-    //   print('getLinkStream error: $err');
-    // });
-    //
-    // ReceiveSharingIntent.getInitialText().then((value) {
-    //   print('Value shared 2: $value');
-    // });
-
-    // _intentDataStreamSubscription = ReceiveSharingIntent.getMediaStream().listen((event) {
-    //   print('Shared files: ${event.length}');
-    //   for (SharedMediaFile file in event) {
-    //     print('Received file 1: ${file.path} : ${file.type}');
-    //   }
-    // }, onError: (err) {
-    //   print("getIntentDataStream error: $err");
-    // });
-    //
-    // ReceiveSharingIntent.getInitialMedia().then((value) {
-    //   print('Shared files: ${value.length}');
-    //   for(SharedMediaFile file in value) {
-    //     print('Received file 1: ${file.path} : ${file.type}');
-    //   }
-    // });
-
     // For sharing images coming from outside the app while the app is in the memory
     _intentDataStreamSubscription =
-        ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> value) {
-          setState(() {
-            //print("Shared:" + (_sharedFiles?.map((f)=> f.path)?.join(",") ?? ""));
-            print('weeee');
-          });
+        ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> files) {
+          _sharedFiles.addAll(files);
+          _insertSharedFilesIntoDatabase(files);
         }, onError: (err) {
           print("getIntentDataStream error: $err");
         });
 
     // For sharing images coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> value) {
-      setState(() {
-        //_sharedFiles = value;
-        print('Shared: $value');
-      });
+    ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> files) {
+      _sharedFiles.addAll(files);
+      _insertSharedFilesIntoDatabase(files);
     });
 
     // For sharing or opening urls/text coming from outside the app while the app is in the memory
