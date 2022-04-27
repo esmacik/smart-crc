@@ -229,7 +229,10 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
     String? newStackName = await _showStackNameDialog();
     if (newStackName != null) {
       CRCCardStack newStack = CRCCardStack.empty(newStackName);
-      STACK_DBWorker.db.create(newStack).then((value) => setState(() {}));
+      int stackId = await STACK_DBWorker.db.create(newStack);
+      setState(() {
+        newStack.id = stackId;
+      });
     }
   }
 
@@ -237,7 +240,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
     String? newStackName = await _showStackNameDialog();
     if (newStackName != null) {
       stack.name = newStackName;
-      STACK_DBWorker.db.update(stack).then((value) => setState(() {}));
+      await STACK_DBWorker.db.update(stack).then((value) => setState(() {}));
     }
   }
 

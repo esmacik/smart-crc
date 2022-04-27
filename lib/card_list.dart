@@ -36,12 +36,15 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
     CRCCard? newCard = await _showClassCreationDialog(context);
     if (newCard != null) {
       newCard.parentStack = widget._stack;
-      CRC_DBWorker.db.create(newCard).then((value) => setState(() {}));
+      int cardId = await CRC_DBWorker.db.create(newCard);
+      setState(() {
+        newCard.id = cardId;
+      });
     }
   }
 
   void _onDeleteButtonPressed(CRCCard card) async {
-    CRC_DBWorker.db.delete(card.id).then((value) => setState(() {}));
+    await CRC_DBWorker.db.delete(card.id).then((value) => setState(() {}));
   }
 
   void _showHowToDialog(BuildContext context) {
@@ -230,7 +233,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
             child: ListTile(
               title: Text(currentCard.className),
-              subtitle: Text('${currentCard.responsibilities.length} responsibilities\n${currentCard.collaborators.length} collaborators'),
+              subtitle: Text('${currentCard.responsibilities.length} responsibilities\n${currentCard.numCollaborators} collaborators'),
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
               onLongPress: () => _showCardSecondaryMenu(context, currentCard),
             ),
@@ -293,7 +296,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         onPressed: () async => _onAddCardButtonPressed(context),
       ),
       body: FutureBuilder<void>(
-        future: Future.wait([cardModel.loadDataWithForeign(CRC_DBWorker.db,widget._stack.id), respModel.loadData(RESP_DBWorker.db)]),
+        future: Future.wait([cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id), respModel.loadData(RESP_DBWorker.db)]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if(widget._stack.cards.length != cardModel.entityList.length) {
@@ -304,7 +307,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                 for(Responsibility r in respModel.entityList){
                   print('R:'+r.name + ', Rid:' + r.id.toString());
                   print('C:'+card.id.toString());
-                  if(r.card?.id == card.id){
+                  if(r.parentCardId == card.id){
                     card.addResponsibility(r);
                   }
                 }
@@ -312,7 +315,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                 // card.addResponsibility(Responsibility.named(card,'Do homework'));
                 // card.addResponsibility(Responsibility.named(card,'Graduate with 4.0'));
 
-                card.note = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel vehicula arcu. Fusce ut tellus in nisi egestas porttitor. Proin sed justo eleifend metus egestas pulvinar. Integer sit amet tortor egestas, pellentesque nunc eu, semper mi. Morbi elementum dolor vel nulla molestie, eget viverra ipsum tincidunt. Nulla molestie et nisl sit amet efficitur. Donec leo dolor, sollicitudin id mattis iaculis, posuere pretium enim. Mauris eu fringilla orci. Ut molestie pharetra nunc vitae convallis. Vestibulum rhoncus sem magna, at dictum quam aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam rhoncus turpis ac felis porttitor feugiat ac vitae lectus. Nam maximus ullamcorper dui porta facilisis. Pellentesque aliquet quam nec dui tincidunt, vitae auctor nibh tincidunt.\n\n' * 5;
+                // card.note = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel vehicula arcu. Fusce ut tellus in nisi egestas porttitor. Proin sed justo eleifend metus egestas pulvinar. Integer sit amet tortor egestas, pellentesque nunc eu, semper mi. Morbi elementum dolor vel nulla molestie, eget viverra ipsum tincidunt. Nulla molestie et nisl sit amet efficitur. Donec leo dolor, sollicitudin id mattis iaculis, posuere pretium enim. Mauris eu fringilla orci. Ut molestie pharetra nunc vitae convallis. Vestibulum rhoncus sem magna, at dictum quam aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam rhoncus turpis ac felis porttitor feugiat ac vitae lectus. Nam maximus ullamcorper dui porta facilisis. Pellentesque aliquet quam nec dui tincidunt, vitae auctor nibh tincidunt.\n\n' * 5;
               }
 
               // for (CRCCard card in widget._stack.cards) {

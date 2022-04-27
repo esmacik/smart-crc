@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
 import 'base_model.dart';
@@ -5,12 +6,13 @@ import 'base_model.dart';
 CardModel cardModel = CardModel();
 
 class CRCCard {
-  var id;
+  late int id;
 
-  CRCCardStack? parentStack;
+  late CRCCardStack? parentStack;
+  //late int parentStackId;
   String className;
   final List<Responsibility> _responsibilities = List.empty(growable: true);
-  final List<CRCCard> _collaborators = List.empty(growable: true);
+  //Map<int, List<int>> _collaborators = {}; // Map responsibility to list of collaborators
   String note = '';
 
   CRCCard(this.className);
@@ -19,22 +21,22 @@ class CRCCard {
 
   CRCCard.fromMap(Map<String, dynamic> map):
     id = map['id'],
-    parentStack = null,
     className = map['className'],
     note = map['note'] {
     _responsibilities.addAll((map['responsibilities'] as List<dynamic>).map((e) => Responsibility.fromMap(e)));
   }
 
-
   int get numResponsibilities => _responsibilities.length;
-  int get numCollaborators => _collaborators.length;
+
+  int get numCollaborators {
+    int sum = 0;
+    for (Responsibility responsibility in _responsibilities) {
+      sum = sum + responsibility.numCollaborators;
+    }
+    return sum;
+  }
 
   List<Responsibility> get responsibilities => _responsibilities;
-  List<CRCCard> get collaborators => _collaborators;
-
-  void addCollaborator(CRCCard crcCard) {
-    _collaborators.add(crcCard);
-  }
 
   void addResponsibility(Responsibility responsibility){
     _responsibilities.add(responsibility);
@@ -43,10 +45,9 @@ class CRCCard {
   Map<String, dynamic> toMap() => {
     'type': 'card',
     'id': id,
-    'parentStack': parentStack?.id,
+    'parentStack': parentStack!.id,
     'className': className,
     'responsibilities': _responsibilities.map((responsibility) => responsibility.toMap()).toList(),
-    'collaborators': _collaborators.map((collaborator) => collaborator.id).toList(),
     'note': note
   };
 }

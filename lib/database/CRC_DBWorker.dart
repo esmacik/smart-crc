@@ -45,9 +45,9 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
     int id = await db.rawInsert(
         "INSERT INTO $TBL_NAME ($KEY_NAME, $KEY_NOTE, $KEY_STACK_ID) "
             "VALUES (?, ?, ?)",
-        [card.className, card.note, card.parentStack?.id]
+        [card.className, card.note, card.parentStack!.id]
     );
-    print("Added: $card, num: $id, parent: ${card.parentStack?.id}");
+    print("Added: $card, num: $id, parent: ${card.parentStack}");
     return id;
   }
 
@@ -109,15 +109,15 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
         onOpen: (db)async {
         print('ok');
         await db.execute('PRAGMA foreign_keys = ON');
-        await db.execute(
-            "DROP TABLE IF EXISTS stacks"
-        );
-        await db.execute(
-            "DROP TABLE IF EXISTS responsibilities"
-        );
-        await db.execute(
-            "DROP TABLE IF EXISTS $TBL_NAME"
-        );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS stacks"
+        // );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS responsibilities"
+        // );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS $TBL_NAME"
+        // );
         await db.execute(
             "CREATE TABLE IF NOT EXISTS responsibilities ("
                 "$KEY_ID INTEGER PRIMARY KEY,"

@@ -32,7 +32,7 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
 
   static const String KEY_ID = '_id';
   static const String KEY_NAME = 'responsibility';
-  static const String KEY_CARD = "cardID";
+  static const String KEY_PARENT_CARD_ID = "cardID";
 
   var _db;
 
@@ -44,9 +44,9 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   Future<int> create(Responsibility r) async {
     Database db = await database;
     int id = await db.rawInsert(
-        "INSERT INTO $TBL_NAME ($KEY_NAME, $KEY_CARD) "
+        "INSERT INTO $TBL_NAME ($KEY_NAME, $KEY_PARENT_CARD_ID) "
             "VALUES (?, ?)",
-        [r.name, r.card?.id]
+        [r.name, r.parentCardId]
     );
     return id;
   }
@@ -69,7 +69,7 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
     Database db = await database;
     var values = await db.query(TBL_NAME, where: "$KEY_ID = ?", whereArgs: [id]);
     if (values.isEmpty) {
-      return Responsibility(CRCCard.blank());
+      return Responsibility();
     } else {
       return _respFromMap(values.first);
     }
@@ -78,7 +78,7 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   @override
   Future<List<Responsibility>> getAllForCard(int cardID) async {
     Database db = await database;
-    var values = await db.query(TBL_NAME, where: "$KEY_CARD = ?", whereArgs: [cardID]);
+    var values = await db.query(TBL_NAME, where: "$KEY_PARENT_CARD_ID = ?", whereArgs: [cardID]);
     return values.isNotEmpty ? values.map((m) => _respFromMap(m)).toList() : [];
   }
 
@@ -90,15 +90,17 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   }
 
   Responsibility _respFromMap(Map map) {
-    return Responsibility(CRCCard.blank())
+    return Responsibility()
       ..name = map[KEY_NAME]
-      ..id = map[KEY_ID];
+      ..id = map[KEY_ID]
+      ..parentCardId = map[KEY_PARENT_CARD_ID];
   }
 
   Map<String, dynamic> _respToMap(Responsibility r) {
     return Map<String, dynamic>()
       ..[KEY_ID] = r.id
-      ..[KEY_NAME] = r.name;
+      ..[KEY_NAME] = r.name
+      ..[KEY_PARENT_CARD_ID] = r.parentCardId;
   }
 
   Future<Database> _init() async {
@@ -110,8 +112,8 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
               "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
                   "$KEY_ID INTEGER PRIMARY KEY,"
                   "$KEY_NAME TEXT,"
-                  "$KEY_CARD INTEGER,"
-                  "FOREIGN KEY($KEY_CARD) REFERENCES cards(_id) ON DELETE CASCADE"
+                  "$KEY_PARENT_CARD_ID INTEGER,"
+                  "FOREIGN KEY($KEY_PARENT_CARD_ID) REFERENCES cards(_id) ON DELETE CASCADE"
                   ");"
           );
         }

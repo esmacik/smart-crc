@@ -56,9 +56,9 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
   Future<int> create(CRCCardStack stack) async {
     Database db = await database;
     int id = await db.rawInsert(
-        "INSERT INTO $TBL_NAME ($KEY_NAME) "
-            "VALUES (?)",
-        [stack.name]
+      "INSERT INTO $TBL_NAME ($KEY_NAME) "
+        "VALUES (?)",
+      [stack.name]
     );
     print("Added: $stack, num: $id");
     return id;
@@ -95,7 +95,6 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
     return values.isNotEmpty ? values.map((m) => _stackFromMap(m)).toList() : [];
   }
 
-
   CRCCardStack _stackFromMap(Map map) {
     return CRCCardStack.empty(map[KEY_NAME])
       ..id = map[KEY_ID];
@@ -109,16 +108,16 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
 
   Future<Database> _init() async {
     return await openDatabase(DB_NAME,
-        version: 1,
-        onOpen: (db) {print('Stack DB opened.');},
-        onCreate: (Database db, int version) async {
-          await db.execute(
-              "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
-                  "$KEY_ID INTEGER PRIMARY KEY,"
-                  "$KEY_NAME TEXT,"
-                  ");"
-          );
-        }
+      version: 1,
+      onOpen: (db) {print('Stack DB opened.');},
+      onCreate: (Database db, int version) async {
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
+            "$KEY_ID INTEGER PRIMARY KEY,"
+            "$KEY_NAME TEXT,"
+            ");"
+        );
+      }
     );
   }
 }

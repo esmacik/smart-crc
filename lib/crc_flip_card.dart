@@ -5,6 +5,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/model/crc_card.dart';
+import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
 
 enum CRCFlipCardType {
@@ -77,8 +78,10 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
       responsibilitiesElements.add(
         IconButton(
           onPressed: () async {
-            Responsibility r = Responsibility(widget._crcCard);
-            var rID = await RESP_DBWorker.db.create(r);
+            Responsibility r = Responsibility();
+            r.parentCardId = widget._crcCard.id;
+            int rID = await RESP_DBWorker.db.create(r);
+            r.id = rID;
             print(rID);
             setState(() {
               widget._crcCard.addResponsibility(r);
@@ -143,61 +146,65 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
     List<Widget> collaboratorsEntries = List.empty(growable: true);
 
     if (editable) {
-      for (CRCCard collaborator in widget._crcCard.collaborators) {
-        collaboratorsEntries.add(
-          Slidable(
-            endActionPane: _buildCollaboratorActionPane(),
-            child: Row(
-              children: [
-                Expanded(
-                  child: DropdownButton<CRCCard>(
-                    isExpanded: true,
-                    value: collaborator,
-                    items: widget._crcCard.parentStack!.cards.where((element) => element != widget._crcCard).map((card) {
-                      return DropdownMenuItem<CRCCard>(
-                        child: Text(card.className),
-                        value: card,
-                      );
-                    }).toList()..add(
-                      const DropdownMenuItem(
-                        child: Text('New...'),
-                        value: null
-                      )
+      for (Responsibility responsibility in widget._crcCard.responsibilities) {
+        for (CRCCard collaborator in responsibility.collaborators) {
+          collaboratorsEntries.add(
+            Slidable(
+                endActionPane: _buildCollaboratorActionPane(),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButton<CRCCard>(
+                        isExpanded: true,
+                        value: collaborator,
+                        items: widget._crcCard.parentStack!.cards.where((element) => element != widget._crcCard).map((card) {
+                          return DropdownMenuItem<CRCCard>(
+                            child: Text(card.className),
+                            value: card,
+                          );
+                        }).toList()..add(
+                            const DropdownMenuItem(
+                                child: Text('New...'),
+                                value: null
+                            )
+                        ),
+                        onChanged: (card) {
+                          setState(() {
+                            responsibility.collaborators.remove(collaborator);
+                            responsibility.collaborators.add(card!);
+                          });
+                        },
+                      ),
                     ),
-                    onChanged: (card) {
-                      setState(() {
-                        widget._crcCard.collaborators.remove(collaborator);
-                        widget._crcCard.collaborators.add(card!);
-                      });
-                    },
-                  ),
+                    const Text(' Responsibility: '),
+                    DropdownButton<int>(
+                        value: 0,
+                        items: List.generate(widget._crcCard.responsibilities.length, (index) {
+                          return DropdownMenuItem<int>(
+                            child: Text((index+1).toString()),
+                            value: index,
+                          );
+                        })..add(
+                            DropdownMenuItem<int>(
+                              child: const Text('New...'),
+                              value: widget._crcCard.responsibilities.length + 1,
+                            )
+                        ),
+                        onChanged: (index) {
+                          if (index != null && index >= widget._crcCard.responsibilities.length) {
+                            setState(() {
+                              Responsibility responsibility = Responsibility();
+                              responsibility.parentCardId = widget._crcCard.id;
+                              widget._crcCard.responsibilities.add(responsibility);
+                            });
+                          }
+                        }
+                    ),
+                  ],
                 ),
-                const Text(' Responsibility: '),
-                DropdownButton<int>(
-                  value: 0,
-                  items: List.generate(widget._crcCard.responsibilities.length, (index) {
-                    return DropdownMenuItem<int>(
-                      child: Text((index+1).toString()),
-                      value: index,
-                    );
-                  })..add(
-                    DropdownMenuItem<int>(
-                      child: const Text('New...'),
-                      value: widget._crcCard.responsibilities.length + 1,
-                    )
-                  ),
-                  onChanged: (index) {
-                    if (index != null && index >= widget._crcCard.responsibilities.length) {
-                      setState(() {
-                        widget._crcCard.responsibilities.add(Responsibility(widget._crcCard));
-                      });
-                    }
-                  }
-                ),
-              ],
-            ),
-          )
-        );
+              )
+          );
+        }
       }
 
       if (widget._crcCard.responsibilities.isNotEmpty) {
@@ -212,36 +219,38 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
             }).toList(),
             onSelected: (card) {
               setState(() {
-                widget._crcCard.collaborators.add(card);
+                //responsibility.collaborators.add(card);
               });
             },
           )
         );
       } else {
         collaboratorsEntries.add(
-          const Center(
+            const Center(
               child: Text('To add a collaborator, add at least one responsibility.')
-          )
+            )
         );
       }
     } else {
-      if (widget._crcCard.collaborators.isEmpty) {
+      if (widget._crcCard.numCollaborators == 0) {
         collaboratorsEntries.add(
-          const Center(
-            child: Text('No collaborators.'),
-          )
+            const Center(
+              child: Text('No collaborators.'),
+            )
         );
       } else {
-        for (CRCCard collaborator in widget._crcCard.collaborators) {
-          collaboratorsEntries.add(
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${widget._crcCard.collaborators.indexOf(collaborator) + 1}. '),
-                Expanded(child: Text('${collaborator.className} helps fulfill responsibility n.')),
-              ],
-            )
-          );
+        for (Responsibility responsibility in widget._crcCard.responsibilities) {
+          for (CRCCard collaborator in responsibility.collaborators) {
+            collaboratorsEntries.add(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${responsibility.collaborators.indexOf(collaborator) + 1}. '),
+                  Expanded(child: Text('${collaborator.className} helps fulfill responsibility n.')),
+                ],
+              )
+            );
+          }
         }
       }
     }

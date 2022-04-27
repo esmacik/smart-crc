@@ -5,7 +5,7 @@ StackModel stackModel = StackModel();
 
 
 class CRCCardStack {
-  var id;
+  late int id;
   String name;
   final List<CRCCard> _cards = List.empty(growable: true);
 
