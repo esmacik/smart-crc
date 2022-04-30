@@ -20,7 +20,6 @@ enum CardListType {
 class CardList extends StatefulWidget {
 
   final CRCCardStack _stack;
-
   const CardList(this._stack, {Key? key}) : super(key: key);
 
   @override
@@ -157,7 +156,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                   _cardNameController.clear();
                   Navigator.of(context).pop(null);
                 },
-                child: const Text('Cancel', style: const TextStyle(color: Colors.red),)
+                child: const Text('Cancel', style: TextStyle(color: Colors.red),)
               ),
               TextButton(
                 onPressed: () {
@@ -180,7 +179,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
     if (stack.cards.isNotEmpty) {
       return GridView.builder(
         padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-        itemCount: widget._stack.cards.length,
+        itemCount: stack.cards.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
           mainAxisSpacing: 8,
@@ -188,11 +187,11 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
           childAspectRatio: 2
         ),
         itemBuilder: (context, index) {
-          CRCCard currentCard = widget._stack.getCard(index);
+          CRCCard currentCard = stack.getCard(index);
           return Slidable(
             endActionPane: _buildCardEndActionPane(context, currentCard),
             child: GestureDetector(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(stack, stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
               onLongPress: () => _showCardSecondaryMenu(context, currentCard),
               child: CRCFlipCard(currentCard, CRCFlipCardType.static)
             ),
@@ -226,7 +225,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         return const Divider();
       },
       itemBuilder: (context, index) {
-        CRCCard currentCard = widget._stack.getCard(index);
+        CRCCard currentCard = stack.getCard(index);
         return Slidable(
           endActionPane: _buildCardEndActionPane(context, currentCard),
           child: Padding(
@@ -234,7 +233,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
             child: ListTile(
               title: Text(currentCard.className),
               subtitle: Text('${currentCard.responsibilities.length} responsibilities\n${currentCard.numCollaborators} collaborators'),
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(stack, stack.cards.indexOf(currentCard), CRCFlipCardType.scrollable))),
               onLongPress: () => _showCardSecondaryMenu(context, currentCard),
             ),
           ),
@@ -299,9 +298,13 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         future: Future.wait([cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id), respModel.loadData(RESP_DBWorker.db)]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            if(widget._stack.cards.length != cardModel.entityList.length) {
+            //if(widget._stack.cards.length != cardModel.entityList.length) {
               widget._stack.cards.clear();
-              widget._stack.addAllCards(cardModel.entityList);
+              //widget._stack.addAllCards(cardModel.entityList);
+              for (CRCCard card in cardModel.entityList) {
+                widget._stack.cards.add(card);
+                card.parentStack = widget._stack;
+              }
 
               for (CRCCard card in widget._stack.cards) {
                 for(Responsibility r in respModel.entityList){
@@ -311,19 +314,8 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                     card.addResponsibility(r);
                   }
                 }
-                // card.addResponsibility(Responsibility.named(card,'Go to class'));
-                // card.addResponsibility(Responsibility.named(card,'Do homework'));
-                // card.addResponsibility(Responsibility.named(card,'Graduate with 4.0'));
-
-                // card.note = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel vehicula arcu. Fusce ut tellus in nisi egestas porttitor. Proin sed justo eleifend metus egestas pulvinar. Integer sit amet tortor egestas, pellentesque nunc eu, semper mi. Morbi elementum dolor vel nulla molestie, eget viverra ipsum tincidunt. Nulla molestie et nisl sit amet efficitur. Donec leo dolor, sollicitudin id mattis iaculis, posuere pretium enim. Mauris eu fringilla orci. Ut molestie pharetra nunc vitae convallis. Vestibulum rhoncus sem magna, at dictum quam aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam rhoncus turpis ac felis porttitor feugiat ac vitae lectus. Nam maximus ullamcorper dui porta facilisis. Pellentesque aliquet quam nec dui tincidunt, vitae auctor nibh tincidunt.\n\n' * 5;
               }
-
-              // for (CRCCard card in widget._stack.cards) {
-              //   card.parentStack!.cards.where((element) => element != card).forEach((element) {
-              //     card.addCollaborator(element);
-              //   });
-              // }
-            }
+            //}
             print("E:"+ cardModel.entityList.toString());
             return SafeArea(
               bottom: false,

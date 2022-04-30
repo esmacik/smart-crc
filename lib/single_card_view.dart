@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smart_crc/model/crc_card.dart';
 import 'crc_flip_card.dart';
 import 'model/crc_card_stack.dart';
 import 'package:flutter/services.dart';
 import 'package:smart_crc/crc_flip_card.dart';
-import 'package:stacked_card_carousel/stacked_card_carousel.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class SingleCardView extends StatefulWidget {
@@ -32,11 +30,12 @@ class _SingleCardViewState extends State<SingleCardView> {
             physics: widget._flipCardType == CRCFlipCardType.editable ? const NeverScrollableScrollPhysics() : null,
             controller: pageController,
             children: widget._stack.cards.map((card) {
+              print('----${card.className}');
               return SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                  child: CRCFlipCard(widget._stack.cards.elementAt(widget._cardIndex), widget._flipCardType),
+                  padding: const EdgeInsets.all(8),
+                  child: CRCFlipCard(card, widget._flipCardType),
                 )
               );
             }).toList(),
@@ -44,14 +43,18 @@ class _SingleCardViewState extends State<SingleCardView> {
           if (widget._flipCardType != CRCFlipCardType.editable) SafeArea(
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: SmoothPageIndicator(
-                effect: const ExpandingDotsEffect(
-                  activeDotColor: Colors.blue,
-                  dotHeight: 8,
-                  dotWidth: 8
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                child: SmoothPageIndicator(
+                  effect: const ExpandingDotsEffect(
+                    activeDotColor: Colors.blue,
+                    dotHeight: 8,
+                    dotWidth: 8
+                  ),
+                  controller: pageController,
+                  count: widget._stack.cards.length,
+                  onDotClicked: (page) => pageController.animateToPage(page, duration: Duration(milliseconds: 500), curve: Curves.ease),
                 ),
-                controller: pageController,
-                count: widget._stack.cards.length,
               ),
             )
           )

@@ -150,7 +150,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
         for (CRCCard collaborator in responsibility.collaborators) {
           collaboratorsEntries.add(
             Slidable(
-                endActionPane: _buildCollaboratorActionPane(),
+                endActionPane: _buildCollaboratorActionPane(responsibility, collaborator),
                 child: Row(
                   children: [
                     Expanded(
@@ -163,42 +163,45 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                             value: card,
                           );
                         }).toList()..add(
-                            const DropdownMenuItem(
-                                child: Text('New...'),
-                                value: null
-                            )
+                          const DropdownMenuItem(
+                            child: Text('New...'),
+                            value: null
+                          )
                         ),
-                        onChanged: (card) {
-                          setState(() {
+                        onChanged: (card) async {
+                          if (card != null) {
                             responsibility.collaborators.remove(collaborator);
-                            responsibility.collaborators.add(card!);
-                          });
+                            responsibility.collaborators.add(card);
+                          }
+                          await RESP_DBWorker.db.update(responsibility).then((value) => setState(() {}));
                         },
                       ),
                     ),
                     const Text(' Responsibility: '),
                     DropdownButton<int>(
-                        value: 0,
-                        items: List.generate(widget._crcCard.responsibilities.length, (index) {
-                          return DropdownMenuItem<int>(
-                            child: Text((index+1).toString()),
-                            value: index,
-                          );
-                        })..add(
-                            DropdownMenuItem<int>(
-                              child: const Text('New...'),
-                              value: widget._crcCard.responsibilities.length + 1,
-                            )
-                        ),
-                        onChanged: (index) {
-                          if (index != null && index >= widget._crcCard.responsibilities.length) {
-                            setState(() {
-                              Responsibility responsibility = Responsibility();
-                              responsibility.parentCardId = widget._crcCard.id;
-                              widget._crcCard.responsibilities.add(responsibility);
-                            });
-                          }
+                      value: widget._crcCard.responsibilities.indexOf(responsibility),
+                      items: List.generate(widget._crcCard.responsibilities.length, (index) {
+                        return DropdownMenuItem<int>(
+                          child: Text('${index+1}'),
+                          value: index,
+                        );
+                      })..add(
+                        DropdownMenuItem<int>(
+                          child: const Text('New...'),
+                          value: widget._crcCard.responsibilities.length + 1,
+                        )
+                      ),
+                      onChanged: (index) async {
+                        if (index != null && index >= widget._crcCard.responsibilities.length) {
+                          Responsibility responsibility = Responsibility();
+                          responsibility.parentCardId = widget._crcCard.id;
+                          widget._crcCard.responsibilities.add(responsibility);
+                        } else if (index != null) {
+                          responsibility.collaborators.remove(collaborator);
+                          widget._crcCard.responsibilities.elementAt(index).collaborators.add(collaborator);
                         }
+                        await RESP_DBWorker.db.update(responsibility).then((value) => setState(() {}));
+                      }
                     ),
                   ],
                 ),
@@ -217,10 +220,9 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                 value: card,
               );
             }).toList(),
-            onSelected: (card) {
-              setState(() {
-                //responsibility.collaborators.add(card);
-              });
+            onSelected: (card) async {
+              widget._crcCard.responsibilities.first.collaborators.add(card);
+              await RESP_DBWorker.db.update(widget._crcCard.responsibilities.first).then((value) => setState(() {}));
             },
           )
         );
@@ -291,13 +293,15 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
           label: 'Delete',
           icon: Icons.delete,
           backgroundColor: Colors.red,
-          onPressed: (context) {}
+          onPressed: (context) => setState(() {
+            widget._crcCard.responsibilities.remove(responsibility);
+          })
         )
       ]
     );
   }
 
-  ActionPane _buildCollaboratorActionPane() {
+  ActionPane _buildCollaboratorActionPane(Responsibility responsibility, CRCCard collaborator) {
     return ActionPane(
       extentRatio: 1/4,
       motion: const ScrollMotion(),
@@ -306,7 +310,11 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
           label: 'Delete',
           icon: Icons.delete,
           backgroundColor: Colors.red,
-          onPressed: (context) {}
+          onPressed: (context) {
+            setState(() {
+              responsibility.collaborators.remove(collaborator);
+            });
+          }
         )
       ]
     );

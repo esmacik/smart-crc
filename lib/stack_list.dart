@@ -18,9 +18,9 @@ enum StackListType {
 
 class StackList extends StatefulWidget {
 
-  final List<CRCCardStack> _crcCardStacks;
+  final List<CRCCardStack> _crcCardStacks = List.empty(growable: true);
 
-  const StackList(this._crcCardStacks, {Key? key}) : super(key: key);
+  StackList({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _StackListState();
@@ -287,10 +287,10 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         future: stackModel.loadData(STACK_DBWorker.db),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            if(widget._crcCardStacks.length != stackModel.entityList.length) {
+            //if(widget._crcCardStacks.length != stackModel.entityList.length) {
               widget._crcCardStacks.clear();
               widget._crcCardStacks.addAll(stackModel.entityList);
-            }
+            //}
             print("E:"+ stackModel.entityList.toString());
             return SafeArea(
               bottom: false,

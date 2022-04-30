@@ -30,19 +30,19 @@ class _SmartCRCSate extends State<SmartCRC> {
 
   @override
   Widget build(BuildContext context) {
-    cardModel.loadData(CRC_DBWorker.db);
+    //cardModel.loadData(CRC_DBWorker.db);
     return MaterialApp(
       title: 'SmartCRC',
       themeMode: ThemeMode.system,
       theme: ThemeData(
-          primarySwatch: Colors.blue
+        primarySwatch: Colors.blue
       ),
       darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch(
-              primaryColorDark: Colors.blue,
-              accentColor: Colors.blue,
-              brightness: Brightness.dark
-          )
+        colorScheme: ColorScheme.fromSwatch(
+          primaryColorDark: Colors.blue,
+          accentColor: Colors.blue,
+          brightness: Brightness.dark
+        )
       ),
       home: _SmartCRCHomePage(),
     );
@@ -134,7 +134,7 @@ class _SmartCRCHomePage extends StatelessWidget {
           child: Text('Begin'),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (BuildContext context) => StackList([])
+              builder: (BuildContext context) => StackList()
             )
           ),
         ),

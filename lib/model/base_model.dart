@@ -27,7 +27,8 @@ class BaseModel<T> extends Model {
 
   Future<void> loadDataWithForeign(database, id) async {
     entityList.clear();
-    entityList.addAll(await database.getAllForStack(id));
+    var results = await database.getAllForStack(id);
+    entityList.addAll(results);
     notifyListeners();
   }
 }

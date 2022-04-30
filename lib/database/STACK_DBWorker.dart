@@ -23,7 +23,7 @@ abstract class STACK_DBWorker {
 
   //Future<List<String>> getAllTableNames();
 
-  }
+}
 
 class _SqfliteNotesDBWorker implements STACK_DBWorker {
 
