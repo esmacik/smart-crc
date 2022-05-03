@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
 import 'base_model.dart';
@@ -7,13 +8,11 @@ CardModel cardModel = CardModel();
 
 class CRCCard {
   late int id;
-
-  late CRCCardStack? parentStack;
-  //late int parentStackId;
   String className;
-  final List<Responsibility> _responsibilities = List.empty(growable: true);
-  //Map<int, List<int>> _collaborators = {}; // Map responsibility to list of collaborators
   String note = '';
+  late CRCCardStack? parentStack;
+  final List<Responsibility> _responsibilities = List.empty(growable: true);
+
 
   CRCCard(this.className);
 
@@ -23,8 +22,20 @@ class CRCCard {
     id = map['id'],
     className = map['className'],
     note = map['note'] {
-    _responsibilities.addAll((map['responsibilities'] as List<dynamic>).map((e) => Responsibility.fromMap(e)));
+    parentStack = stackModel.entityList.firstWhere((stack) => stack.id == (map['parentStack'] as int));
+    for (int respId in (map['responsibilities'] as List<int>)) {
+      _responsibilities.add(respModel.entityList.firstWhere((resp) => resp.id == respId));
+    }
   }
+
+  Map<String, dynamic> toMap() => {
+    'type': 'card',
+    'id': id,
+    'parentStack': parentStack!.id,
+    'className': className,
+    'responsibilities': _responsibilities.map((responsibility) => responsibility.toMap()).toList(),
+    'note': note
+  };
 
   int get numResponsibilities => _responsibilities.length;
 
@@ -41,15 +52,6 @@ class CRCCard {
   void addResponsibility(Responsibility responsibility){
     _responsibilities.add(responsibility);
   }
-
-  Map<String, dynamic> toMap() => {
-    'type': 'card',
-    'id': id,
-    'parentStack': parentStack!.id,
-    'className': className,
-    'responsibilities': _responsibilities.map((responsibility) => responsibility.toMap()).toList(),
-    'note': note
-  };
 }
 
 class CardModel extends BaseModel<CRCCard> {

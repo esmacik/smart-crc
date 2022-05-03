@@ -105,18 +105,18 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
 
   Future<Database> _init() async {
     return await openDatabase(DB_NAME,
-        version: 1,
-        onOpen: (db) {},
-        onCreate: (Database db, int version) async {
-          await db.execute(
-              "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
-                  "$KEY_ID INTEGER PRIMARY KEY,"
-                  "$KEY_NAME TEXT,"
-                  "$KEY_PARENT_CARD_ID INTEGER,"
-                  "FOREIGN KEY($KEY_PARENT_CARD_ID) REFERENCES cards(_id) ON DELETE CASCADE"
-                  ");"
-          );
-        }
+      version: 1,
+      onOpen: (db) {},
+      onCreate: (Database db, int version) async {
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
+              "$KEY_ID INTEGER PRIMARY KEY,"
+              "$KEY_NAME TEXT,"
+              "$KEY_PARENT_CARD_ID INTEGER,"
+              "FOREIGN KEY($KEY_PARENT_CARD_ID) REFERENCES cards(_id) ON DELETE CASCADE"
+              ");"
+        );
+      }
     );
   }
 }

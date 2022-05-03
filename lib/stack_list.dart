@@ -83,7 +83,10 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                 children: [
                   Center(child: Text(stack.name, textScaleFactor: 2,)),
                   ListTile(
-                    onTap: () => _onRenamePressed(stack),
+                    onTap: () async {
+                      await _onRenamePressed(stack);
+                      Navigator.of(context).pop();
+                    },
                     leading: const Icon(Icons.edit),
                     title: const Text('Rename'),
                   ),
@@ -97,7 +100,10 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                     title: const Text('Share'),
                   ),
                   ListTile(
-                    onTap: () => _onDeletePressed(stack),
+                    onTap: () {
+                      _onDeletePressed(stack);
+                      Navigator.of(context).pop();
+                    },
                     leading: const Icon(Icons.delete, color: Colors.red,),
                     title: Text('Delete ${stack.name}',
                       style: const TextStyle(
@@ -132,12 +138,13 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         CRCCardStack currentStack = widget._crcCardStacks.elementAt(index);
         return GestureDetector(
           child: _buildStackWidget(currentStack),
-          onTap: () {
-            Navigator.of(context).push(
+          onTap: () async {
+            await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (BuildContext context) => CardList(currentStack)
               )
             );
+            setState(() {});
           },
           onLongPress: () => _showStackSecondaryMenu(context, currentStack),
         );
@@ -154,7 +161,10 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         return ListTile(
           title: Text(currStack.name),
           subtitle: Text('${currStack.numCards} cards'),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => CardList(currStack))),
+          onTap: () async {
+            await Navigator.of(context).push(MaterialPageRoute(builder: (context) => CardList(currStack)));
+            setState(() {});
+          },
           onLongPress: () => _showStackSecondaryMenu(context, currStack),
         );
       }
@@ -236,7 +246,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
     }
   }
 
-  void _onRenamePressed(CRCCardStack stack) async {
+  Future<void> _onRenamePressed(CRCCardStack stack) async {
     String? newStackName = await _showStackNameDialog();
     if (newStackName != null) {
       stack.name = newStackName;

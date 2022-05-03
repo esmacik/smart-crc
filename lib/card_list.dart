@@ -87,7 +87,11 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                 children: [
                   Center(child: Text(card.className, textScaleFactor: 2,)),
                   ListTile(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(card), CRCFlipCardType.editable))),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      await Navigator.of(context).push(MaterialPageRoute(builder: (context) => SingleCardView(widget._stack, widget._stack.cards.indexOf(card), CRCFlipCardType.editable)));
+                      setState(() {});
+                    },
                     title: const Text('Edit'),
                     leading: const Icon(Icons.edit),
                   ),
@@ -95,7 +99,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                     onTap: () async {
                       String contents = jsonEncode(card.toMap());
                       String writtenFilePath = await writeFile('${card.className.replaceAll(' ', '_')}_card', contents);
-                      Share.shareFiles([writtenFilePath]);
+                      await Share.shareFiles([writtenFilePath]);
                     },
                     title: const Text('Share'),
                     leading: const Icon(Icons.ios_share),

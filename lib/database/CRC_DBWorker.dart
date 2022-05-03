@@ -109,18 +109,18 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
         onOpen: (db)async {
         print('ok');
         await db.execute('PRAGMA foreign_keys = ON');
-        await db.execute(
-            "DROP TABLE IF EXISTS stacks"
-        );
-        await db.execute(
-            "DROP TABLE IF EXISTS responsibilities"
-        );
-        await db.execute(
-            "DROP TABLE IF EXISTS collaborators"
-        );
-        await db.execute(
-            "DROP TABLE IF EXISTS $TBL_NAME"
-        );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS stacks"
+        // );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS responsibilities"
+        // );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS collaborators"
+        // );
+        // await db.execute(
+        //     "DROP TABLE IF EXISTS $TBL_NAME"
+        // );
         await db.execute(
             "CREATE TABLE IF NOT EXISTS responsibilities ("
                 "$KEY_ID INTEGER PRIMARY KEY,"

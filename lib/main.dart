@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smart_crc/database/RESP_DBWorker.dart';
+import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/responsibility.dart';
 import 'package:smart_crc/stack_list.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
@@ -49,15 +51,23 @@ class _SmartCRCSate extends State<SmartCRC> {
   }
 
   Future<void> _insertSharedFilesIntoDatabase(List<SharedMediaFile> files) async {
+    await stackModel.loadData(STACK_DBWorker.db);
+    await cardModel.loadData(CRC_DBWorker.db);
+    await respModel.loadData(RESP_DBWorker.db);
+
     for (SharedMediaFile file in files) {
       if (file.path.endsWith('.json')) {
         String fileContents = await File(file.path).readAsString();
         Map<String, dynamic> mapFromJson = jsonDecode(fileContents);
         if (mapFromJson['type'] == 'stack') {
           CRCCardStack stack = CRCCardStack.fromMap(mapFromJson);
-          print('Stack name: ${stack.name}');
+          int id = await STACK_DBWorker.db.create(stack);
+          stack.id = id;
+          print('Stack added to database: ${stack.name}');
         } else if (mapFromJson['type'] == 'card') {
           CRCCard card = CRCCard.fromMap(mapFromJson);
+          int id = await CRC_DBWorker.db.create(card);
+          card.id = id;
           print('Card name: ${card.className}');
         } else if (mapFromJson['type'] == 'responsibility') {
           Responsibility responsibility = Responsibility.fromMap(mapFromJson);
@@ -79,17 +89,17 @@ class _SmartCRCSate extends State<SmartCRC> {
 
     // For sharing images coming from outside the app while the app is in the memory
     _intentDataStreamSubscription =
-        ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> files) {
+        ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> files) async {
           _sharedFiles.addAll(files);
-          _insertSharedFilesIntoDatabase(files);
+          await _insertSharedFilesIntoDatabase(files);
         }, onError: (err) {
           print("getIntentDataStream error: $err");
         });
 
     // For sharing images coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> files) {
+    ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> files) async {
       _sharedFiles.addAll(files);
-      _insertSharedFilesIntoDatabase(files);
+      await _insertSharedFilesIntoDatabase(files);
     });
 
     // For sharing or opening urls/text coming from outside the app while the app is in the memory

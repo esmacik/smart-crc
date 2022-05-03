@@ -158,15 +158,17 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: DropdownButton(
+                      child: DropdownButton<CRCCard>(
                         isExpanded: true,
-                        value: collaborator,
-                        items: widget._crcCard.parentStack!.cards.where((element) => element.id != widget._crcCard.id).map((card) {
+                        //value: collaborator,
+                        value: widget._crcCard.parentStack!.cards.firstWhere((element) => element.id == collaborator.cardID),
+                        items: widget._crcCard.parentStack!.cards.where((card) => card != widget._crcCard).map((card) {
                           // print(widget._crcCard.parentStack!.cards.where((element) => element.id != widget._crcCard.id));
                           // print('AAA' + card.className);
-                          return DropdownMenuItem(
+                          return DropdownMenuItem<CRCCard>(
                             child: Text(card.className),
-                            value: Collaborator.assigned(card,responsibility)
+                            //value: Collaborator.assigned(card,responsibility)
+                            value: card
                           );
                         }).toSet().toList()..add(
                           const DropdownMenuItem(
@@ -176,11 +178,10 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                         ),
                         onChanged: (newCollab) async {
                           print('You selected:' + newCollab.toString());
-                          // if (newCollab != null) {
-                          //   setState(() {
-                          //     collaborator = newCollab as Collaborator;
-                          //   });
-                          // }
+                          if (newCollab != null) {
+                            collaborator.cardID = newCollab.id;
+                            await COLLAB_DBWorker.db.update(collaborator).then((value) => setState(() {}));
+                          }
                         },
                       ),
                     ),
@@ -221,7 +222,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
         collaboratorsEntries.add(
           PopupMenuButton<CRCCard>(
             icon: const Icon(Icons.add),
-            itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((element) => element != widget._crcCard).map((card) {
+            itemBuilder: (context) => widget._crcCard.parentStack!.cards.where((card) => card != widget._crcCard).map((card) {
               return PopupMenuItem<CRCCard>(
                 child: Text(card.className),
                 value: card,

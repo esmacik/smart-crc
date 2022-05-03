@@ -1,25 +1,32 @@
 import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/crc_card.dart';
+import 'package:smart_crc/model/crc_card_stack.dart';
 import 'base_model.dart';
 
 RespModel respModel = RespModel();
 
 class Responsibility {
   late int id;
-  //late CRCCard card;
   late int parentCardId;
   String name = "";
   final List<Collaborator> collaborators = List.empty(growable: true);
 
-  //Hashmap: Map collaborators to index of responsibility
-
   Responsibility.fromMap(Map<String, dynamic> map):
     id = map['id'],
-    name = map['name'];
+    name = map['name'],
+    parentCardId = map['parentCardId'] {
+    // collaborators.addAll((map['collaborators'] as List<int>).map((collaboratorId) {
+    //   return cardModel.cardList.firstWhere((card) => card.id == collaboratorId);
+    // }));
+  }
 
-  // Responsibility(CRCCard c) {
-  //   parentCardId = c.id;
-  // }
+  Map<String, dynamic> toMap() => {
+    'type': 'responsibility',
+    'id': id,
+    'name': name,
+    'parentCardId': parentCardId,
+    'collaborators': collaborators.map((collaborator) => collaborator.id)
+  };
 
   Responsibility();
 
@@ -30,12 +37,7 @@ class Responsibility {
 
   int get numCollaborators => collaborators.length;
 
-  Map<String, dynamic> toMap() => {
-    'type': 'responsibility',
-    'id': id,
-    'name': name,
-    'parentCardId': parentCardId
-  };
+
 }
 
 class RespModel extends BaseModel<Responsibility> {
