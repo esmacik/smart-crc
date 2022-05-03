@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:smart_crc/database/COLLAB_DBWorker.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/file_writer.dart';
+import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/preferences.dart';
 import 'package:smart_crc/single_card_view.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
@@ -295,7 +297,11 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         onPressed: () async => _onAddCardButtonPressed(context),
       ),
       body: FutureBuilder<void>(
-        future: Future.wait([cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id), respModel.loadData(RESP_DBWorker.db)]),
+        future: Future.wait([
+            cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id),
+            respModel.loadData(RESP_DBWorker.db),
+            collabModel.loadData(COLLAB_DBWorker.db)
+        ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             //if(widget._stack.cards.length != cardModel.entityList.length) {
@@ -308,10 +314,17 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
 
               for (CRCCard card in widget._stack.cards) {
                 for(Responsibility r in respModel.entityList){
-                  print('R:'+r.name + ', Rid:' + r.id.toString());
-                  print('C:'+card.id.toString());
+                  // print('R:'+r.name + ', Rid:' + r.id.toString());
+                  // print('C:'+card.id.toString());
                   if(r.parentCardId == card.id){
                     card.addResponsibility(r);
+                  }
+                }
+              }
+              for(Responsibility r in respModel.entityList){
+                for(Collaborator c in collabModel.entityList) {
+                  if (c.respID == r.id) {
+                    r.collaborators.add(c);
                   }
                 }
               }

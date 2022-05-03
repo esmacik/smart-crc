@@ -1,3 +1,4 @@
+import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'base_model.dart';
 
@@ -8,7 +9,7 @@ class Responsibility {
   //late CRCCard card;
   late int parentCardId;
   String name = "";
-  final List<CRCCard> collaborators = List.empty(growable: true);
+  final List<Collaborator> collaborators = List.empty(growable: true);
 
   //Hashmap: Map collaborators to index of responsibility
 

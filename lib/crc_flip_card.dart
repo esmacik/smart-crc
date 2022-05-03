@@ -2,8 +2,10 @@ import 'package:flip_card/flip_card.dart';
 import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:smart_crc/database/COLLAB_DBWorker.dart';
 import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
+import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
@@ -143,37 +145,42 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
   }
 
   Widget _buildCollaboratorsView([bool editable = false, bool scrollable = false]) {
-    List<Widget> collaboratorsEntries = List.empty(growable: true);
+    Set<Widget> collaboratorsEntries = {};
 
     if (editable) {
       for (Responsibility responsibility in widget._crcCard.responsibilities) {
-        for (CRCCard collaborator in responsibility.collaborators) {
+        for (Collaborator collaborator in responsibility.collaborators) {
+          //print(responsibility.collaborators.length);
+          print('---' + collaborator.id.toString());
           collaboratorsEntries.add(
             Slidable(
                 endActionPane: _buildCollaboratorActionPane(responsibility, collaborator),
                 child: Row(
                   children: [
                     Expanded(
-                      child: DropdownButton<CRCCard>(
+                      child: DropdownButton(
                         isExpanded: true,
                         value: collaborator,
-                        items: widget._crcCard.parentStack!.cards.where((element) => element != widget._crcCard).map((card) {
-                          return DropdownMenuItem<CRCCard>(
+                        items: widget._crcCard.parentStack!.cards.where((element) => element.id != widget._crcCard.id).map((card) {
+                          // print(widget._crcCard.parentStack!.cards.where((element) => element.id != widget._crcCard.id));
+                          // print('AAA' + card.className);
+                          return DropdownMenuItem(
                             child: Text(card.className),
-                            value: card,
+                            value: Collaborator.assigned(card,responsibility)
                           );
-                        }).toList()..add(
+                        }).toSet().toList()..add(
                           const DropdownMenuItem(
                             child: Text('New...'),
                             value: null
                           )
                         ),
-                        onChanged: (card) async {
-                          if (card != null) {
-                            responsibility.collaborators.remove(collaborator);
-                            responsibility.collaborators.add(card);
-                          }
-                          await RESP_DBWorker.db.update(responsibility).then((value) => setState(() {}));
+                        onChanged: (newCollab) async {
+                          print('You selected:' + newCollab.toString());
+                          // if (newCollab != null) {
+                          //   setState(() {
+                          //     collaborator = newCollab as Collaborator;
+                          //   });
+                          // }
                         },
                       ),
                     ),
@@ -221,8 +228,13 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
               );
             }).toList(),
             onSelected: (card) async {
-              widget._crcCard.responsibilities.first.collaborators.add(card);
-              await RESP_DBWorker.db.update(widget._crcCard.responsibilities.first).then((value) => setState(() {}));
+              Collaborator collab = Collaborator.assigned(card, this.widget._crcCard.responsibilities.first);
+              var id = await COLLAB_DBWorker.db.create(collab);
+              collab.id = id;
+              widget._crcCard.responsibilities.first.collaborators.add(collab);
+              setState(() {
+              });
+              //await RESP_DBWorker.db.update(widget._crcCard.responsibilities.first).then((value) => setState(() {}));
             },
           )
         );
@@ -242,13 +254,15 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
         );
       } else {
         for (Responsibility responsibility in widget._crcCard.responsibilities) {
-          for (CRCCard collaborator in responsibility.collaborators) {
+          for (Collaborator collaborator in responsibility.collaborators) {
             collaboratorsEntries.add(
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('${responsibility.collaborators.indexOf(collaborator) + 1}. '),
-                  Expanded(child: Text('${collaborator.className} helps fulfill responsibility n.')),
+                  Expanded(child: Text('${cardModel.entityList.firstWhere((element) =>
+                    element.id == collaborator.cardID).className} helps fulfill responsibility'
+                      ' ${(widget._crcCard.responsibilities.indexWhere((element) => responsibility.id == collaborator.respID)+1).toString()}.')),
                 ],
               )
             );
@@ -256,7 +270,6 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
         }
       }
     }
-
     return Expanded(
       child: Column(
         children: [
@@ -295,13 +308,14 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
           backgroundColor: Colors.red,
           onPressed: (context) => setState(() {
             widget._crcCard.responsibilities.remove(responsibility);
+            RESP_DBWorker.db.delete(responsibility.id);
           })
         )
       ]
     );
   }
 
-  ActionPane _buildCollaboratorActionPane(Responsibility responsibility, CRCCard collaborator) {
+  ActionPane _buildCollaboratorActionPane(Responsibility responsibility, Collaborator collaborator) {
     return ActionPane(
       extentRatio: 1/4,
       motion: const ScrollMotion(),
@@ -313,6 +327,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
           onPressed: (context) {
             setState(() {
               responsibility.collaborators.remove(collaborator);
+              COLLAB_DBWorker.db.delete(collaborator.id);
             });
           }
         )
