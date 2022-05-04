@@ -47,7 +47,7 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
             "VALUES (?, ?, ?)",
         [card.className, card.note, card.parentStack!.id]
     );
-    print("Added: $card, num: $id, parent: ${card.parentStack}");
+    print("Added: ${card.className}, num: $id, parent: ${card.parentStack?.id}");
     return id;
   }
 

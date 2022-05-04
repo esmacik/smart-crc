@@ -422,6 +422,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
   }
 
   Widget _buildCRCCard([bool editable = false, bool scrollable = true]) {
+    print('PID: ${widget._crcCard.parentStack?.id}');
     return AspectRatio(
       aspectRatio: 6/3,
       child: Stack(

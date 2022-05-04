@@ -11,6 +11,8 @@ import 'dart:math';
 
 import 'package:smart_crc/preferences.dart';
 
+import 'model/crc_card.dart';
+
 enum StackListType {
   full,
   compact
@@ -32,40 +34,38 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   final TextEditingController _stackNameController = TextEditingController();
 
   Widget _buildStackWidget(CRCCardStack stack) {
+    print('Length: ${stack.cards.length}');
+    // for(var card in cardModel.entityList){
+    //   print('P: ${card.id}');
+    // }
     return Stack(
       fit: StackFit.loose,
       children: [
-        Transform.rotate(
-          angle: -pi / 20,
-          child: const Card(
-            elevation: 20,
-            child: AspectRatio(aspectRatio: 2),
+        for(var card in stack.cards)
+          Transform.rotate(
+            angle: -pi / 20,
+            child: const Card(
+              elevation: 20,
+              child: AspectRatio(aspectRatio: 2),
+            ),
           ),
-        ),
-        Transform.rotate(
-          angle: pi / 20,
-          child: const Card(
-            elevation: 20,
-            child: AspectRatio(aspectRatio: 2),
-          ),
-        ),
         AspectRatio(
           aspectRatio: 2/1,
           child: Card(
             elevation: 20,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  stack.name,
-                  textScaleFactor: 2
-                ),
-                Text('${stack.numCards} cards')
-              ]
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                      stack.name,
+                      textScaleFactor: 2
+                  ),
+                  Text('${stack.numCards} cards')
+                ]
             ),
           ),
         )
-      ],
+      ]
     );
   }
 
@@ -174,7 +174,8 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   Widget _buildStackList(Iterable<CRCCardStack> stacks) {
     if (stacks.isEmpty) {
       return const Center(
-        child: Text('Create your first CRC Card Stack with the add button below.'),
+        child: Text('Create your first CRC Card Stack with the add button below.',
+          textAlign: TextAlign.center),
       );
     } else if (Preferences.stackListType == StackListType.full) {
       return _buildFullStackList(stacks);
@@ -258,6 +259,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).primaryColor,
         title: const Text('Stack List'),
         actions: [
           IconButton(
@@ -291,6 +293,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
+        backgroundColor: Theme.of(context).primaryColor,
         onPressed: () => _onAddButtonPressed(),
       ),
       body: FutureBuilder<void>(
@@ -304,7 +307,25 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
             print("E:"+ stackModel.entityList.toString());
             return SafeArea(
               bottom: false,
-              child: _buildStackList(widget._crcCardStacks),
+              child: Container(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        begin:  Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: [
+                          0.1,
+                          0.40,
+                          1
+                        ],
+                        colors: [
+                          Color(0xFF65777B),
+                          Color(0xFF4A5659),
+                          Color(0xFF2F3739)
+                        ]
+                    )
+                ),
+                child: _buildStackList(widget._crcCardStacks),
+              )
             );
           } else {
             return const Center(

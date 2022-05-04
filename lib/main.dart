@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/responsibility.dart';
@@ -37,12 +37,13 @@ class _SmartCRCSate extends State<SmartCRC> {
       title: 'SmartCRC',
       themeMode: ThemeMode.system,
       theme: ThemeData(
-        primarySwatch: Colors.blue
+        fontFamily: 'Montserrat',
+        primaryColor: Color(0xFF1DB8DA)
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(
-          primaryColorDark: Colors.blue,
-          accentColor: Colors.blue,
+          primaryColorDark: Color(0xFF1DB8DA),
+          accentColor: Color(0xFF1DB8DA),
           brightness: Brightness.dark
         )
       ),
@@ -79,14 +80,12 @@ class _SmartCRCSate extends State<SmartCRC> {
         print('Shared file is not a json file.');
       }
     }
-
     _sharedFiles.clear();
   }
 
   @override
   void initState() {
     super.initState();
-
     // For sharing images coming from outside the app while the app is in the memory
     _intentDataStreamSubscription =
         ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> files) async {
@@ -128,26 +127,51 @@ class _SmartCRCHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     cardModel.loadData(CRC_DBWorker.db);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('SmartCRC'),
-      ),
+      appBar: null,
       body: Center(
-        child: ElevatedButton(
-          style: ButtonStyle(
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)
-            )),
-            fixedSize: MaterialStateProperty.all(Size(175,50))
-          ),
-          child: Text('Begin'),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) => StackList()
-            )
-          ),
-        ),
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin:  Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                  stops: [
+                    0.1,
+                    0.33,
+                    1
+                  ],
+                  colors: [
+                    Colors.white,
+                    Colors.white,
+                    Theme.of(context).primaryColor
+                  ]
+              )
+            ),
+              child: Column(
+                children: [
+                  Image.asset('assets/images/crc.png',scale: 3),
+                  Text("SmartCRC", style: TextStyle(fontSize: 28, color: Color(0xFF607074), fontWeight: FontWeight.w500),),
+                  SizedBox(height: 50),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.white),
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25)
+                      )),
+                      fixedSize: MaterialStateProperty.all(Size(175,50))
+                    ),
+                    child: Text('Begin',style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w500, fontSize: 16)),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => StackList()
+                  )
+                ),
+              )
+            ],
+            mainAxisAlignment: MainAxisAlignment.center,
+          )
+        )
       ),
     );
   }

@@ -35,8 +35,8 @@ class CRCCardStack {
   List<CRCCard> get cards => _cards;
 
   void addCard(CRCCard card) {
-    //CRC_DBWorker.db.create(card);
     card.parentStack = this;
+    cards.add(card);
   }
 
   void addAllCards(Iterable<CRCCard> cards) {

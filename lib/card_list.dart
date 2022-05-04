@@ -40,6 +40,8 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
       int cardId = await CRC_DBWorker.db.create(newCard);
       setState(() {
         newCard.id = cardId;
+        widget._stack.addCard(newCard);
+        print(widget._stack.numCards);
       });
     }
   }
