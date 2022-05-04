@@ -13,7 +13,6 @@ class CRCCard {
   late CRCCardStack? parentStack;
   final List<Responsibility> _responsibilities = List.empty(growable: true);
 
-
   CRCCard(this.className);
 
   CRCCard.blank(): className = 'New Card';

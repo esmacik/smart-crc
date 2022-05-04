@@ -81,6 +81,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
         IconButton(
           onPressed: () async {
             Responsibility r = Responsibility();
+            r.name = 'New responsibility';
             r.parentCardId = widget._crcCard.id;
             int rID = await RESP_DBWorker.db.create(r);
             r.id = rID;
@@ -161,7 +162,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                       child: DropdownButton<CRCCard>(
                         isExpanded: true,
                         //value: collaborator,
-                        value: widget._crcCard.parentStack!.cards.firstWhere((element) => element.id == collaborator.cardID),
+                        value: widget._crcCard.parentStack!.cards.firstWhere((card) => card.id == collaborator.cardID),
                         items: widget._crcCard.parentStack!.cards.where((card) => card != widget._crcCard).map((card) {
                           // print(widget._crcCard.parentStack!.cards.where((element) => element.id != widget._crcCard.id));
                           // print('AAA' + card.className);
@@ -181,6 +182,8 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                           if (newCollab != null) {
                             collaborator.cardID = newCollab.id;
                             await COLLAB_DBWorker.db.update(collaborator).then((value) => setState(() {}));
+                          } else {
+
                           }
                         },
                       ),
@@ -202,12 +205,15 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
                       onChanged: (index) async {
                         if (index != null && index >= widget._crcCard.responsibilities.length) {
                           Responsibility responsibility = Responsibility();
+                          responsibility.name = 'New responsibility';
                           responsibility.parentCardId = widget._crcCard.id;
                           widget._crcCard.responsibilities.add(responsibility);
                         } else if (index != null) {
                           responsibility.collaborators.remove(collaborator);
                           widget._crcCard.responsibilities.elementAt(index).collaborators.add(collaborator);
+                          collaborator.respID = widget._crcCard.responsibilities.elementAt(index).id;
                         }
+                        await COLLAB_DBWorker.db.update(collaborator);
                         await RESP_DBWorker.db.update(responsibility).then((value) => setState(() {}));
                       }
                     ),
@@ -260,10 +266,8 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${responsibility.collaborators.indexOf(collaborator) + 1}. '),
-                  Expanded(child: Text('${cardModel.entityList.firstWhere((element) =>
-                    element.id == collaborator.cardID).className} helps fulfill responsibility'
-                      ' ${(widget._crcCard.responsibilities.indexWhere((element) => responsibility.id == collaborator.respID)+1).toString()}.')),
+                  Expanded(child: Text('Responsibility ${widget._crcCard.responsibilities.indexOf(responsibility)+ 1} collaborates with ${cardModel.entityList.firstWhere((element) =>
+                    element.id == collaborator.cardID).className}.'))
                 ],
               )
             );
