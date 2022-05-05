@@ -17,22 +17,26 @@ class CRCCard {
 
   CRCCard.blank(): className = 'New Card';
 
-  CRCCard.fromMap(Map<String, dynamic> map):
-    id = map['id'],
+  CRCCard.fromMap(Map<String, dynamic> map, this.parentStack):
+    //id = map['id'],
     className = map['className'],
     note = map['note'] {
-    parentStack = stackModel.entityList.firstWhere((stack) => stack.id == (map['parentStack'] as int));
-    for (int respId in (map['responsibilities'] as List<int>)) {
-      _responsibilities.add(respModel.entityList.firstWhere((resp) => resp.id == respId));
+    for (Map<String, dynamic> respMap in map['responsibilities']) {
+      Responsibility responsibility = Responsibility.fromMap(respMap);
+      responsibility.parentCardId = parentStack?.id as int;
+      _responsibilities.add(responsibility);
     }
   }
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toMap({required bool includeParent}) => {
     'type': 'card',
-    'id': id,
-    'parentStack': parentStack!.id,
+    //'id': id,
+    'parentStack': includeParent ? parentStack!.id : null,
     'className': className,
-    'responsibilities': _responsibilities.map((responsibility) => responsibility.toMap()).toList(),
+    'responsibilities': _responsibilities.map((responsibility) {
+      print('Number of responsibilities for this card: ${_responsibilities.length}');
+      return responsibility.toMap();
+    }).toList(),
     'note': note
   };
 

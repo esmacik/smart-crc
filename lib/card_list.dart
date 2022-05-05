@@ -99,7 +99,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                   ),
                   ListTile(
                     onTap: () async {
-                      String contents = jsonEncode(card.toMap());
+                      String contents = jsonEncode(card.toMap(includeParent: false));
                       String writtenFilePath = await writeFile('${card.className.replaceAll(' ', '_')}_card', contents);
                       await Share.shareFiles([writtenFilePath]);
                     },
@@ -310,19 +310,11 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            //if(widget._stack.cards.length != cardModel.entityList.length) {
               widget._stack.cards.clear();
               widget._stack.addAllCards(cardModel.entityList);
-              // for (CRCCard card in cardModel.entityList) {
-              //   widget._stack.cards.add(card);
-              //   card.parentStack = widget._stack;
-              //   card.parentStack?.numCards+=1;
-              // }
 
               for (CRCCard card in widget._stack.cards) {
                 for(Responsibility r in respModel.entityList){
-                  // print('R:'+r.name + ', Rid:' + r.id.toString());
-                  // print('C:'+card.id.toString());
                   if(r.parentCardId == card.id){
                     card.addResponsibility(r);
                   }
@@ -335,7 +327,6 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                   }
                 }
               }
-            //}
             print("E:"+ cardModel.entityList.toString());
             return SafeArea(
               bottom: false,

@@ -62,14 +62,28 @@ class _SmartCRCSate extends State<SmartCRC> {
         Map<String, dynamic> mapFromJson = jsonDecode(fileContents);
         if (mapFromJson['type'] == 'stack') {
           CRCCardStack stack = CRCCardStack.fromMap(mapFromJson);
-          int id = await STACK_DBWorker.db.create(stack);
-          stack.id = id;
-          print('Stack added to database: ${stack.name}');
+          stack.id = await STACK_DBWorker.db.create(stack);
+          for (CRCCard card in stack.cards) {
+            card.id = await CRC_DBWorker.db.create(card);
+            for (Responsibility responsibility in card.responsibilities) {
+              responsibility.id = await RESP_DBWorker.db.create(responsibility);
+            }
+          }
+
+
+          // for (Map<String, dynamic> cardMap in (mapFromJson['cards'] as List<Map<String, dynamic>>)) {
+          //   CRCCard card = CRCCard.fromMap(cardMap, stack);
+          //   int cardId = await CRC_DBWorker.db.create(card);
+          //   card.id = cardId;
+          //   print('Card added to database: ${card.className}');
+          // }
+          print('Stack and children cards added to database: ${stack.name}');
         } else if (mapFromJson['type'] == 'card') {
-          CRCCard card = CRCCard.fromMap(mapFromJson);
-          int id = await CRC_DBWorker.db.create(card);
-          card.id = id;
-          print('Card name: ${card.className}');
+          // CRCCard card = CRCCard.fromMap(mapFromJson);
+          // int id = await CRC_DBWorker.db.create(card);
+          // card.id = id;
+          //print('Card name: ${card.className}');
+          print('Received a card');
         } else if (mapFromJson['type'] == 'responsibility') {
           Responsibility responsibility = Responsibility.fromMap(mapFromJson);
           print('Responsibility name: ${responsibility.name}');
@@ -88,31 +102,35 @@ class _SmartCRCSate extends State<SmartCRC> {
     super.initState();
     // For sharing images coming from outside the app while the app is in the memory
     _intentDataStreamSubscription =
-        ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> files) async {
-          _sharedFiles.addAll(files);
-          await _insertSharedFilesIntoDatabase(files);
-        }, onError: (err) {
-          print("getIntentDataStream error: $err");
-        });
+      ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> files) async {
+        print('File received 1!!!: ${files.length}');
+        _sharedFiles.addAll(files);
+        await _insertSharedFilesIntoDatabase(files);
+        files.clear();
+      }, onError: (err) {
+        print("getIntentDataStream error: $err");
+      });
 
     // For sharing images coming from outside the app while the app is closed
     ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> files) async {
+      print('File received 2!!!: ${files.length}');
       _sharedFiles.addAll(files);
       await _insertSharedFilesIntoDatabase(files);
+      files.clear();
     });
 
     // For sharing or opening urls/text coming from outside the app while the app is in the memory
-    _intentDataStreamSubscription =
-        ReceiveSharingIntent.getTextStream().listen((String value) {
-          print('Shared: $value');
-        }, onError: (err) {
-          print("getLinkStream error: $err");
-        });
+    // _intentDataStreamSubscription =
+    //     ReceiveSharingIntent.getTextStream().listen((String value) {
+    //       print('Shared: $value');
+    //     }, onError: (err) {
+    //       print("getLinkStream error: $err");
+    //     });
 
     // For sharing or opening urls/text coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialText().then((value) {
-      print('Shared: $value');
-    });
+    // ReceiveSharingIntent.getInitialText().then((value) {
+    //   print('Shared: $value');
+    // });
   }
 
   @override
@@ -136,11 +154,7 @@ class _SmartCRCHomePage extends StatelessWidget {
               gradient: LinearGradient(
                 begin:  Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                  stops: [
-                    0.1,
-                    0.33,
-                    1
-                  ],
+                  stops: const [0.1, 0.33, 1],
                   colors: [
                     Colors.white,
                     Colors.white,
@@ -151,8 +165,8 @@ class _SmartCRCHomePage extends StatelessWidget {
               child: Column(
                 children: [
                   Image.asset('assets/images/crc.png',scale: 3),
-                  Text("SmartCRC", style: TextStyle(fontSize: 28, color: Color(0xFF607074), fontWeight: FontWeight.w500),),
-                  SizedBox(height: 50),
+                  Text("SmartCRC", style: const TextStyle(fontSize: 28, color: Color(0xFF607074), fontWeight: FontWeight.w500),),
+                  const SizedBox(height: 50),
                   ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(Colors.white),

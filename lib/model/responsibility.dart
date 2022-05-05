@@ -12,20 +12,15 @@ class Responsibility {
   final List<Collaborator> collaborators = List.empty(growable: true);
 
   Responsibility.fromMap(Map<String, dynamic> map):
-    id = map['id'],
+    //id = map['id'],
     name = map['name'],
-    parentCardId = map['parentCardId'] {
-    // collaborators.addAll((map['collaborators'] as List<int>).map((collaboratorId) {
-    //   return cardModel.cardList.firstWhere((card) => card.id == collaboratorId);
-    // }));
-  }
+    parentCardId = map['parentCardId'];
 
   Map<String, dynamic> toMap() => {
     'type': 'responsibility',
-    'id': id,
+    //'id': id,
     'name': name,
     'parentCardId': parentCardId,
-    'collaborators': collaborators.map((collaborator) => collaborator.id)
   };
 
   Responsibility();
@@ -36,8 +31,6 @@ class Responsibility {
   }
 
   int get numCollaborators => collaborators.length;
-
-
 }
 
 class RespModel extends BaseModel<Responsibility> {

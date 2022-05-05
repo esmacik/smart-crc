@@ -1,3 +1,5 @@
+import 'package:smart_crc/database/RESP_DBWorker.dart';
+import 'package:smart_crc/model/responsibility.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:smart_crc/model/crc_card.dart';
 
@@ -71,7 +73,8 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
     if (values.isEmpty) {
       return CRCCard.blank();
     } else {
-      return _cardFromMap(values.first);
+      CRCCard card = _cardFromMap(values.first);
+      return card;
     }
   }
 
@@ -79,7 +82,15 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
   Future<List<CRCCard>> getAll() async {
     Database db = await database;
     var values = await db.query(TBL_NAME);
-    return values.isNotEmpty ? values.map((m) => _cardFromMap(m)).toList() : [];
+    List<CRCCard> cards = values.isNotEmpty ? values.map((m) => _cardFromMap(m)).toList() : [];
+    for (CRCCard card in cards) {
+      await RESP_DBWorker.db.getAllForCard(card.id);
+      for (Responsibility responsibility in respModel.entityList) {
+        responsibility.parentCardId = card.id;
+        card.addResponsibility(responsibility);
+      }
+    }
+    return cards;
   }
 
   @override

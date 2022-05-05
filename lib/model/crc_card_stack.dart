@@ -6,23 +6,28 @@ StackModel stackModel = StackModel();
 
 class CRCCardStack {
   int numCards = 0;
-  late int id;
+  int? id;
   String name;
   final List<CRCCard> _cards = List.empty(growable: true);
 
   CRCCardStack.empty(this.name);
 
   CRCCardStack.fromMap(Map<String, dynamic> map):
-    name = map['name'],
-    id = map['id'] {
-    _cards.addAll((map['cards'] as List<Map<String, dynamic>>).map((cardMap) => CRCCard.fromMap(cardMap)));
+    name = map['name']/*,
+    id = map['id']*/ {
+    //_cards.addAll((map['cards'] as List<Map<String, dynamic>>).map((cardMap) => CRCCard.fromMap(cardMap, this)).toList());
+    for (Map<String, dynamic> cardMap in map['cards']) {
+      CRCCard newCard = CRCCard.fromMap(cardMap, this);
+      _cards.add(newCard);
+      newCard.parentStack = this;
+    }
   }
 
   Map<String, dynamic> toMap() => {
     'type': 'stack',
-    'id': id,
+    //'id': id,
     'name': name,
-    'cards': _cards.map((card) => card.toMap()).toList()
+    'cards': _cards.map((card) => card.toMap(includeParent: true)).toList()
   };
 
   CRCCardStack(this.name, Iterable<CRCCard> cards) {

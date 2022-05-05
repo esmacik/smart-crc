@@ -120,7 +120,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   }
 
   void _onDeletePressed(CRCCardStack stack) {
-    STACK_DBWorker.db.delete(stack.id).then((value) => setState(() {}));
+    STACK_DBWorker.db.delete(stack.id as int).then((value) => setState(() {}));
   }
 
   Widget _buildFullStackList(Iterable<CRCCardStack> stacks) {
@@ -307,15 +307,11 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
             return SafeArea(
               bottom: false,
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     gradient: LinearGradient(
                         begin:  Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        stops: [
-                          0.1,
-                          0.40,
-                          1
-                        ],
+                        stops: [0.1, 0.40, 1],
                         colors: [
                           Color(0xFF65777B),
                           Color(0xFF4A5659),
