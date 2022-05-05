@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/card_list.dart';
+import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/file_writer.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
@@ -35,20 +36,18 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
 
   Widget _buildStackWidget(CRCCardStack stack) {
     print('Length: ${stack.cards.length}');
-    // for(var card in cardModel.entityList){
-    //   print('P: ${card.id}');
-    // }
     return Stack(
       fit: StackFit.loose,
-      children: [
-        for(var card in stack.cards)
-          Transform.rotate(
-            angle: -pi / 20,
-            child: const Card(
-              elevation: 20,
-              child: AspectRatio(aspectRatio: 2),
-            ),
+      children: stack.cards.map((card) {
+        return Transform.rotate(
+          //angle: pi/((stack.cards.indexOf(card)+1) * pi),
+          angle: (stack.cards.length - stack.cards.indexOf(card)) * pi / 45,
+          child: Card(
+            elevation: 20,
+            child: AspectRatio(aspectRatio: 2,),
           ),
+        ) as Widget;
+      }).toList().take(5).toList()..add(
         AspectRatio(
           aspectRatio: 2/1,
           child: Card(
@@ -65,7 +64,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
             ),
           ),
         )
-      ]
+      )
     );
   }
 
@@ -297,7 +296,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         onPressed: () => _onAddButtonPressed(),
       ),
       body: FutureBuilder<void>(
-        future: stackModel.loadData(STACK_DBWorker.db),
+        future: Future.wait([stackModel.loadData(STACK_DBWorker.db)]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             //if(widget._crcCardStacks.length != stackModel.entityList.length) {

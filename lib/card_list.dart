@@ -300,7 +300,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () async => _onAddCardButtonPressed(context),
+        onPressed: () => _onAddCardButtonPressed(context),
       ),
       body: FutureBuilder<void>(
         future: Future.wait([
@@ -312,11 +312,12 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
           if (snapshot.connectionState == ConnectionState.done) {
             //if(widget._stack.cards.length != cardModel.entityList.length) {
               widget._stack.cards.clear();
-              //widget._stack.addAllCards(cardModel.entityList);
-              for (CRCCard card in cardModel.entityList) {
-                widget._stack.cards.add(card);
-                card.parentStack = widget._stack;
-              }
+              widget._stack.addAllCards(cardModel.entityList);
+              // for (CRCCard card in cardModel.entityList) {
+              //   widget._stack.cards.add(card);
+              //   card.parentStack = widget._stack;
+              //   card.parentStack?.numCards+=1;
+              // }
 
               for (CRCCard card in widget._stack.cards) {
                 for(Responsibility r in respModel.entityList){

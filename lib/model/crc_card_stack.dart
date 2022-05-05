@@ -5,6 +5,7 @@ StackModel stackModel = StackModel();
 
 
 class CRCCardStack {
+  int numCards = 0;
   late int id;
   String name;
   final List<CRCCard> _cards = List.empty(growable: true);
@@ -30,13 +31,14 @@ class CRCCardStack {
 
   CRCCard getCard(int index) => _cards.elementAt(index);
 
-  int get numCards => _cards.length;
+  int get() => numCards;
 
   List<CRCCard> get cards => _cards;
 
   void addCard(CRCCard card) {
     card.parentStack = this;
     cards.add(card);
+    numCards++;
   }
 
   void addAllCards(Iterable<CRCCard> cards) {
@@ -44,11 +46,13 @@ class CRCCardStack {
       _cards.add(card);
       card.parentStack = this;
     }
+    numCards += cards.length;
   }
 
   void removeCard(int index) {
     //CRC_DBWorker.db.delete(_cards.elementAt(index).id);
     _cards.removeAt(index);
+    numCards--;
   }
 
 }

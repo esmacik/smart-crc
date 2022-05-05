@@ -1,3 +1,4 @@
+import 'package:smart_crc/database/CRC_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:smart_crc/model/crc_card.dart';
@@ -84,7 +85,13 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
     if (values.isEmpty) {
       return CRCCardStack.empty('Stack');
     } else {
-      return _stackFromMap(values.first);
+      var stack = _stackFromMap(values.first);
+      await cardModel.loadDataWithForeign(CRC_DBWorker.db, stack.id);
+      cardModel.entityList.forEach((card){
+        card.parentStack = stack;
+        stack.addCard(card);
+      });
+      return stack;
     }
   }
 
@@ -92,7 +99,12 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
   Future<List<CRCCardStack>> getAll() async {
     Database db = await database;
     var values = await db.query(TBL_NAME);
-    return values.isNotEmpty ? values.map((m) => _stackFromMap(m)).toList() : [];
+    List<CRCCardStack> stacks = values.isNotEmpty ? values.map((m) => _stackFromMap(m)).toList() : [];
+    for (CRCCardStack stack in stacks) {
+      await cardModel.loadDataWithForeign(CRC_DBWorker.db, stack.id);
+      stack.addAllCards(cardModel.entityList);
+    }
+    return stacks;
   }
 
   CRCCardStack _stackFromMap(Map map) {

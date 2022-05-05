@@ -89,6 +89,12 @@ class _SqfliteNotesDBWorker implements CRC_DBWorker {
     return values.isNotEmpty ? values.map((m) => _cardFromMap(m)).toList() : [];
   }
 
+  Future<int> countCardsForStack(int stackID) async {
+    Database db = await database;
+    var values = await db.query(TBL_NAME, where: "$KEY_STACK_ID = ?", whereArgs: [stackID]);
+    return values.isNotEmpty ? values.map((m) => _cardFromMap(m)).toList().length : 0;
+  }
+
   CRCCard _cardFromMap(Map map) {
     return CRCCard.blank()
       ..className = map[KEY_NAME]
