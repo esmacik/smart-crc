@@ -23,7 +23,6 @@ class CRCCard {
     note = map['note'] {
     for (Map<String, dynamic> respMap in map['responsibilities']) {
       Responsibility responsibility = Responsibility.fromMap(respMap);
-      responsibility.parentCardId = parentStack?.id as int;
       _responsibilities.add(responsibility);
     }
   }

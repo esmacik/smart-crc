@@ -1,4 +1,4 @@
-import 'package:smart_crc/database/CRC_DBWorker.dart';
+import 'package:smart_crc/database/CARD_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:smart_crc/model/crc_card.dart';
@@ -86,7 +86,7 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
       return CRCCardStack.empty('Stack');
     } else {
       var stack = _stackFromMap(values.first);
-      await cardModel.loadDataWithForeign(CRC_DBWorker.db, stack.id);
+      await cardModel.loadDataWithForeign(CARD_DBWorker.db, stack.id);
       cardModel.entityList.forEach((card){
         card.parentStack = stack;
         stack.addCard(card);
@@ -101,7 +101,7 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
     var values = await db.query(TBL_NAME);
     List<CRCCardStack> stacks = values.isNotEmpty ? values.map((m) => _stackFromMap(m)).toList() : [];
     for (CRCCardStack stack in stacks) {
-      await cardModel.loadDataWithForeign(CRC_DBWorker.db, stack.id);
+      await cardModel.loadDataWithForeign(CARD_DBWorker.db, stack.id);
       stack.addAllCards(cardModel.entityList);
     }
     return stacks;
@@ -126,7 +126,7 @@ class _SqfliteNotesDBWorker implements STACK_DBWorker {
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $TBL_NAME ("
             "$KEY_ID INTEGER PRIMARY KEY,"
-            "$KEY_NAME TEXT,"
+            "$KEY_NAME TEXT"
             ");"
         );
       }

@@ -1,3 +1,5 @@
+import 'package:smart_crc/database/COLLAB_DBWorker.dart';
+import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/crc_card.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:smart_crc/model/responsibility.dart';
@@ -79,7 +81,16 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
   Future<List<Responsibility>> getAllForCard(int cardID) async {
     Database db = await database;
     var values = await db.query(TBL_NAME, where: "$KEY_PARENT_CARD_ID = ?", whereArgs: [cardID]);
-    return values.isNotEmpty ? values.map((m) => _respFromMap(m)).toList() : [];
+    List<Responsibility> responsibilities = values.isNotEmpty ? values.map((m) => _respFromMap(m)).toList() : [];
+    await COLLAB_DBWorker.db.getAll();
+    for (Responsibility responsibility in responsibilities) {
+      for (Collaborator collaborator in collabModel.entityList) {
+        if (responsibility.id == collaborator.respID) {
+          responsibility.collaborators.add(collaborator);
+        }
+      }
+    }
+    return responsibilities;
   }
 
   @override

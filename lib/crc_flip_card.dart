@@ -3,7 +3,7 @@ import 'package:flip_card/flip_card_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/database/COLLAB_DBWorker.dart';
-import 'package:smart_crc/database/CRC_DBWorker.dart';
+import 'package:smart_crc/database/CARD_DBWorker.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/crc_card.dart';
@@ -39,7 +39,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
         initialValue: widget._crcCard.className,
         onChanged: (value) {
           widget._crcCard.className = value;
-          CRC_DBWorker.db.update(widget._crcCard);
+          CARD_DBWorker.db.update(widget._crcCard);
         }
       );
     }
@@ -83,9 +83,7 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
             Responsibility r = Responsibility();
             r.name = 'New responsibility';
             r.parentCardId = widget._crcCard.id;
-            int rID = await RESP_DBWorker.db.create(r);
-            r.id = rID;
-            print(rID);
+            r.id = await RESP_DBWorker.db.create(r);
             setState(() {
               widget._crcCard.addResponsibility(r);
             });

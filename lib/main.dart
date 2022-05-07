@@ -7,14 +7,14 @@ import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/model/responsibility.dart';
 import 'package:smart_crc/stack_list.dart';
-import 'package:smart_crc/database/CRC_DBWorker.dart';
+import 'package:smart_crc/database/CARD_DBWorker.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'model/crc_card.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'dart:convert';
 
 void main() {
-  runApp(SmartCRC());
+  runApp(const SmartCRC());
 }
 
 class SmartCRC extends StatefulWidget {
@@ -32,7 +32,8 @@ class _SmartCRCSate extends State<SmartCRC> {
 
   @override
   Widget build(BuildContext context) {
-    //cardModel.loadData(CRC_DBWorker.db);
+    // cardModel.loadData(CRC_DBWorker.db);
+    CARD_DBWorker.db.init();
     return MaterialApp(
       title: 'SmartCRC',
       themeMode: ThemeMode.system,
@@ -52,9 +53,9 @@ class _SmartCRCSate extends State<SmartCRC> {
   }
 
   Future<void> _insertSharedFilesIntoDatabase(List<SharedMediaFile> files) async {
-    await stackModel.loadData(STACK_DBWorker.db);
-    await cardModel.loadData(CRC_DBWorker.db);
-    await respModel.loadData(RESP_DBWorker.db);
+    ///await stackModel.loadData(STACK_DBWorker.db);
+    await cardModel.loadData(CARD_DBWorker.db);
+    //await respModel.loadData(RESP_DBWorker.db);
 
     for (SharedMediaFile file in files) {
       if (file.path.endsWith('.json')) {
@@ -64,8 +65,10 @@ class _SmartCRCSate extends State<SmartCRC> {
           CRCCardStack stack = CRCCardStack.fromMap(mapFromJson);
           stack.id = await STACK_DBWorker.db.create(stack);
           for (CRCCard card in stack.cards) {
-            card.id = await CRC_DBWorker.db.create(card);
+            card.parentStack = stack;
+            card.id = await CARD_DBWorker.db.create(card);
             for (Responsibility responsibility in card.responsibilities) {
+              responsibility.parentCardId = card.id;
               responsibility.id = await RESP_DBWorker.db.create(responsibility);
             }
           }
@@ -85,8 +88,8 @@ class _SmartCRCSate extends State<SmartCRC> {
           //print('Card name: ${card.className}');
           print('Received a card');
         } else if (mapFromJson['type'] == 'responsibility') {
-          Responsibility responsibility = Responsibility.fromMap(mapFromJson);
-          print('Responsibility name: ${responsibility.name}');
+          //Responsibility responsibility = Responsibility.fromMap(mapFromJson);
+          //print('Responsibility name: ${responsibility.name}');
         } else {
           print('Invalid json format.');
         }
@@ -94,7 +97,6 @@ class _SmartCRCSate extends State<SmartCRC> {
         print('Shared file is not a json file.');
       }
     }
-    _sharedFiles.clear();
   }
 
   @override
@@ -106,7 +108,7 @@ class _SmartCRCSate extends State<SmartCRC> {
         print('File received 1!!!: ${files.length}');
         _sharedFiles.addAll(files);
         await _insertSharedFilesIntoDatabase(files);
-        files.clear();
+        //files.clear();
       }, onError: (err) {
         print("getIntentDataStream error: $err");
       });
@@ -116,7 +118,7 @@ class _SmartCRCSate extends State<SmartCRC> {
       print('File received 2!!!: ${files.length}');
       _sharedFiles.addAll(files);
       await _insertSharedFilesIntoDatabase(files);
-      files.clear();
+      //files.clear();
     });
 
     // For sharing or opening urls/text coming from outside the app while the app is in the memory
@@ -144,7 +146,7 @@ class _SmartCRCHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    cardModel.loadData(CRC_DBWorker.db);
+    cardModel.loadData(CARD_DBWorker.db);
     return Scaffold(
       appBar: null,
       body: Center(

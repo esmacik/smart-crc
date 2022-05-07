@@ -21,7 +21,9 @@ class BaseModel<T> extends Model {
   /// Load all the data from the available database.
   Future<void> loadData(database) async {
     entityList.clear();
-    entityList.addAll(await database.getAll());
+    var results = await database.getAll();
+    print('Base model query results: $results');
+    entityList.addAll(results);
     notifyListeners();
   }
 

@@ -8,7 +8,7 @@ import 'package:smart_crc/single_card_view.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:smart_crc/model/responsibility.dart';
 import 'crc_flip_card.dart';
-import 'database/CRC_DBWorker.dart';
+import 'database/CARD_DBWorker.dart';
 import 'model/crc_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:share_plus/share_plus.dart';
@@ -33,11 +33,17 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _cardNameController = TextEditingController();
 
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void _onAddCardButtonPressed(BuildContext context) async {
     CRCCard? newCard = await _showClassCreationDialog(context);
     if (newCard != null) {
       newCard.parentStack = widget._stack;
-      int cardId = await CRC_DBWorker.db.create(newCard);
+      int cardId = await CARD_DBWorker.db.create(newCard);
       setState(() {
         newCard.id = cardId;
         widget._stack.addCard(newCard);
@@ -47,7 +53,16 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
   }
 
   void _onDeleteButtonPressed(CRCCard card) async {
-    await CRC_DBWorker.db.delete(card.id).then((value) => setState(() {}));
+    for (Responsibility responsibility in card.responsibilities) {
+      for (Collaborator collaborator in responsibility.collaborators) {
+        COLLAB_DBWorker.db.delete(collaborator.id);
+      }
+      responsibility.collaborators.clear();
+      RESP_DBWorker.db.delete(responsibility.id);
+    }
+    card.responsibilities.clear();
+    widget._stack.cards.remove(card);
+    await CARD_DBWorker.db.delete(card.id).then((value) => setState(() {}));
   }
 
   void _showHowToDialog(BuildContext context) {
@@ -101,6 +116,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                     onTap: () async {
                       String contents = jsonEncode(card.toMap(includeParent: false));
                       String writtenFilePath = await writeFile('${card.className.replaceAll(' ', '_')}_card', contents);
+                      print('Card json: $contents');
                       await Share.shareFiles([writtenFilePath]);
                     },
                     title: const Text('Share'),
@@ -131,53 +147,55 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
   }
 
   Future<CRCCard?> _showClassCreationDialog(BuildContext context) async {
+    final AlertDialog dialog = AlertDialog(
+      title: const Text('Class name'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Enter a unique class name.'),
+          Form(
+            key: _formKey,
+            child: TextFormField(
+              controller: _cardNameController,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Enter a class name.';
+                } else if (widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
+                  return 'New class name must be unique.';
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () {
+              _cardNameController.clear();
+              Navigator.of(context).pop(null);
+            },
+            child: const Text('Cancel', style: TextStyle(color: Colors.red),)
+        ),
+        TextButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                CRCCard newCard = CRCCard(_cardNameController.text);
+                _cardNameController.clear();
+                Navigator.of(context).pop(newCard);
+              }
+            },
+            child: const Text('Accept')
+        ),
+      ],
+    );
+
     return await showDialog<CRCCard>(
       barrierDismissible: false,
       context: context,
       builder: (context) => Center(
         child: SingleChildScrollView(
-          child: AlertDialog(
-            title: const Text('Class name'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Enter a unique class name.'),
-                Form(
-                  key: _formKey,
-                  child: TextFormField(
-                    controller: _cardNameController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Enter a class name.';
-                      } else if (widget._stack.cards.where((element) => element.className.toLowerCase() == value.toLowerCase()).isNotEmpty) {
-                        return 'New class name must be unique.';
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  _cardNameController.clear();
-                  Navigator.of(context).pop(null);
-                },
-                child: const Text('Cancel', style: TextStyle(color: Colors.red),)
-              ),
-              TextButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    CRCCard newCard = CRCCard(_cardNameController.text);
-                    _cardNameController.clear();
-                    Navigator.of(context).pop(newCard);
-                  }
-                },
-                child: const Text('Accept')
-              ),
-            ],
-          ),
+          child: dialog,
         ),
       )
     );
@@ -303,30 +321,40 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         onPressed: () => _onAddCardButtonPressed(context),
       ),
       body: FutureBuilder<void>(
-        future: Future.wait([
-            cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id),
-            respModel.loadData(RESP_DBWorker.db),
-            collabModel.loadData(COLLAB_DBWorker.db)
-        ]),
+        // future: Future.wait([
+        //   cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id),
+        //   respModel.loadData(RESP_DBWorker.db),
+        //   collabModel.loadData(COLLAB_DBWorker.db)
+        // ]),
+        future: cardModel.loadDataWithForeign(CARD_DBWorker.db, widget._stack.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-              widget._stack.cards.clear();
-              widget._stack.addAllCards(cardModel.entityList);
+            for (CRCCard card in cardModel.entityList) {
+              if (widget._stack.cards.where((element) => element.id == card.id).isEmpty) {
+                card.parentStack = widget._stack;
+                widget._stack.cards.add(card);
+              }
+            }
 
-              for (CRCCard card in widget._stack.cards) {
-                for(Responsibility r in respModel.entityList){
-                  if(r.parentCardId == card.id){
-                    card.addResponsibility(r);
-                  }
-                }
-              }
-              for(Responsibility r in respModel.entityList){
-                for(Collaborator c in collabModel.entityList) {
-                  if (c.respID == r.id) {
-                    r.collaborators.add(c);
-                  }
-                }
-              }
+            // if (cardModel.entityList.length != widget._stack.cards) {
+            //   widget._stack.cards.clear();
+            //   widget._stack.addAllCards(cardModel.entityList);
+            // }
+
+            // for (CRCCard card in widget._stack.cards) {
+            //   for(Responsibility r in respModel.entityList){
+            //     if(r.parentCardId == card.id){
+            //       card.addResponsibility(r);
+            //     }
+            //   }
+            // }
+            // for(Responsibility r in respModel.entityList){
+            //   for(Collaborator c in collabModel.entityList) {
+            //     if (c.respID == r.id) {
+            //       r.collaborators.add(c);
+            //     }
+            //   }
+            // }
             print("E:"+ cardModel.entityList.toString());
             return SafeArea(
               bottom: false,

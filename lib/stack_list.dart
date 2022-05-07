@@ -3,11 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:smart_crc/card_list.dart';
-import 'package:smart_crc/database/CRC_DBWorker.dart';
+import 'package:smart_crc/database/CARD_DBWorker.dart';
+import 'package:smart_crc/database/COLLAB_DBWorker.dart';
+import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
 import 'package:smart_crc/file_writer.dart';
+import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/crc_card_stack.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smart_crc/model/responsibility.dart';
 import 'dart:math';
 
 import 'package:smart_crc/preferences.dart';
@@ -35,12 +39,10 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   final TextEditingController _stackNameController = TextEditingController();
 
   Widget _buildStackWidget(CRCCardStack stack) {
-    print('Length: ${stack.cards.length}');
     return Stack(
       fit: StackFit.loose,
       children: stack.cards.map((card) {
         return Transform.rotate(
-          //angle: pi/((stack.cards.indexOf(card)+1) * pi),
           angle: (stack.cards.length - stack.cards.indexOf(card)) * pi / 45,
           child: Card(
             elevation: 20,
@@ -53,14 +55,14 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
           child: Card(
             elevation: 20,
             child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      stack.name,
-                      textScaleFactor: 2
-                  ),
-                  Text('${stack.numCards} cards')
-                ]
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  stack.name,
+                  textScaleFactor: 2
+                ),
+                Text('${stack.numCards} cards')
+              ]
             ),
           ),
         )
@@ -93,7 +95,8 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                     onTap: () async {
                       String contents = jsonEncode(stack.toMap());
                       String writtenFilePath = await writeFile('${stack.name.replaceAll(' ', '_')}_stack', contents);
-                      Share.shareFiles([writtenFilePath]);
+                      print('Stack json: $contents');
+                      await Share.shareFiles([writtenFilePath]);
                     },
                     leading: const Icon(Icons.ios_share),
                     title: const Text('Share'),
@@ -120,6 +123,19 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   }
 
   void _onDeletePressed(CRCCardStack stack) {
+    for (CRCCard card in stack.cards) {
+      for (Responsibility responsibility in card.responsibilities) {
+        for (Collaborator collaborator in responsibility.collaborators) {
+          COLLAB_DBWorker.db.delete(collaborator.id);
+        }
+        responsibility.collaborators.clear();
+        RESP_DBWorker.db.delete(responsibility.id);
+      }
+      card.responsibilities.clear();
+      CARD_DBWorker.db.delete(card.id);
+    }
+    stack.cards.clear();
+    widget._crcCardStacks.remove(stack);
     STACK_DBWorker.db.delete(stack.id as int).then((value) => setState(() {}));
   }
 
@@ -183,8 +199,8 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
     }
   }
 
-  Future<String?> _showStackNameDialog() {
-    return showDialog<String>(
+  Future<String?> _showStackNameDialog() async {
+    return await showDialog<String>(
       barrierDismissible: false,
       context: context,
       builder: (context) => Center(
@@ -296,28 +312,30 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         onPressed: () => _onAddButtonPressed(),
       ),
       body: FutureBuilder<void>(
-        future: Future.wait([stackModel.loadData(STACK_DBWorker.db)]),
+        future: stackModel.loadData(STACK_DBWorker.db),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            //if(widget._crcCardStacks.length != stackModel.entityList.length) {
-              widget._crcCardStacks.clear();
-              widget._crcCardStacks.addAll(stackModel.entityList);
-            //}
+            for (CRCCardStack stack in stackModel.entityList) {
+              if (widget._crcCardStacks.where((element) => element.id == stack.id).isEmpty) {
+                widget._crcCardStacks.add(stack);
+              }
+            }
+            //widget._crcCardStacks.addAll(stackModel.entityList);
             print("E:"+ stackModel.entityList.toString());
             return SafeArea(
               bottom: false,
               child: Container(
                 decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        begin:  Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: [0.1, 0.40, 1],
-                        colors: [
-                          Color(0xFF65777B),
-                          Color(0xFF4A5659),
-                          Color(0xFF2F3739)
-                        ]
-                    )
+                  gradient: LinearGradient(
+                    begin:  Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.1, 0.40, 1],
+                    colors: [
+                      Color(0xFF65777B),
+                      Color(0xFF4A5659),
+                      Color(0xFF2F3739)
+                    ]
+                  )
                 ),
                 child: _buildStackList(widget._crcCardStacks),
               )
