@@ -72,14 +72,6 @@ class _SmartCRCSate extends State<SmartCRC> {
               responsibility.id = await RESP_DBWorker.db.create(responsibility);
             }
           }
-
-
-          // for (Map<String, dynamic> cardMap in (mapFromJson['cards'] as List<Map<String, dynamic>>)) {
-          //   CRCCard card = CRCCard.fromMap(cardMap, stack);
-          //   int cardId = await CRC_DBWorker.db.create(card);
-          //   card.id = cardId;
-          //   print('Card added to database: ${card.className}');
-          // }
           print('Stack and children cards added to database: ${stack.name}');
         } else if (mapFromJson['type'] == 'card') {
           // CRCCard card = CRCCard.fromMap(mapFromJson);
@@ -120,19 +112,6 @@ class _SmartCRCSate extends State<SmartCRC> {
       await _insertSharedFilesIntoDatabase(files);
       //files.clear();
     });
-
-    // For sharing or opening urls/text coming from outside the app while the app is in the memory
-    // _intentDataStreamSubscription =
-    //     ReceiveSharingIntent.getTextStream().listen((String value) {
-    //       print('Shared: $value');
-    //     }, onError: (err) {
-    //       print("getLinkStream error: $err");
-    //     });
-
-    // For sharing or opening urls/text coming from outside the app while the app is closed
-    // ReceiveSharingIntent.getInitialText().then((value) {
-    //   print('Shared: $value');
-    // });
   }
 
   @override

@@ -84,6 +84,8 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
             r.name = 'New responsibility';
             r.parentCardId = widget._crcCard.id;
             r.id = await RESP_DBWorker.db.create(r);
+            await RESP_DBWorker.db.getAllForCard(widget._crcCard.id);
+            respModel.entityList;
             setState(() {
               widget._crcCard.addResponsibility(r);
             });
@@ -382,7 +384,10 @@ class _CRCFlipCardState extends State<CRCFlipCard> {
             initialValue: widget._crcCard.note,
             minLines: 10,
             maxLines: 10,
-            onChanged: (value) {},
+            onChanged: (value) async {
+              widget._crcCard.note = value;
+              await CARD_DBWorker.db.update(widget._crcCard);
+            },
           )
         );
       } else {

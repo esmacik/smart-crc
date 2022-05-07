@@ -92,7 +92,7 @@ class _SqfliteNotesDBWorker implements CARD_DBWorker {
     for (CRCCard card in cards) {
       await RESP_DBWorker.db.getAllForCard(card.id);
       for (Responsibility responsibility in respModel.entityList) {
-        responsibility.parentCardId = card.id;
+        //responsibility.parentCardId = card.id;
         card.addResponsibility(responsibility);
       }
     }
@@ -105,8 +105,8 @@ class _SqfliteNotesDBWorker implements CARD_DBWorker {
     var values = await db.query(TBL_NAME, where: "$KEY_STACK_ID = ?", whereArgs: [stackID]);
     List<CRCCard> cards = values.isNotEmpty ? values.map((m) => _cardFromMap(m)).toList() : [];
     for (CRCCard card in cards) {
-      await RESP_DBWorker.db.getAllForCard(card.id);
-      for (Responsibility responsibility in respModel.entityList) {
+      List<Responsibility> responsibilities = await RESP_DBWorker.db.getAllForCard(card.id);
+      for (Responsibility responsibility in responsibilities) {
         responsibility.parentCardId = card.id;
         card.addResponsibility(responsibility);
       }

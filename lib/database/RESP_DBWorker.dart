@@ -82,9 +82,9 @@ class _SqfliteNotesDBWorker implements RESP_DBWorker {
     Database db = await database;
     var values = await db.query(TBL_NAME, where: "$KEY_PARENT_CARD_ID = ?", whereArgs: [cardID]);
     List<Responsibility> responsibilities = values.isNotEmpty ? values.map((m) => _respFromMap(m)).toList() : [];
-    await COLLAB_DBWorker.db.getAll();
+    List<Collaborator> collaborators = await COLLAB_DBWorker.db.getAll();
     for (Responsibility responsibility in responsibilities) {
-      for (Collaborator collaborator in collabModel.entityList) {
+      for (Collaborator collaborator in collaborators) {
         if (responsibility.id == collaborator.respID) {
           responsibility.collaborators.add(collaborator);
         }

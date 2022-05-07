@@ -52,6 +52,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
     }
   }
 
+
   void _onDeleteButtonPressed(CRCCard card) async {
     for (Responsibility responsibility in card.responsibilities) {
       for (Collaborator collaborator in responsibility.collaborators) {
@@ -75,9 +76,9 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Divider(thickness: 1 ,color: Colors.white),
-            Text('Tap a card to view more details.\n'),
-            Text('Swipe a card to the left or right to flip the card.\n'),
-            Text('Long-press a card to edit, share, and delete.')
+            Text('Tap the flip button to '),
+            Text('Tap a card view the card up close.\n'),
+            Text('Slide a card to the left or long-press to edit, share, or delete the card.\n'),
           ],
         ),
         actions: [
@@ -326,7 +327,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         //   respModel.loadData(RESP_DBWorker.db),
         //   collabModel.loadData(COLLAB_DBWorker.db)
         // ]),
-        future: cardModel.loadDataWithForeign(CARD_DBWorker.db, widget._stack.id),
+        future: Future.wait([cardModel.loadDataWithForeign(CARD_DBWorker.db, widget._stack.id), RESP_DBWorker.db.getAll()]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             for (CRCCard card in cardModel.entityList) {
@@ -350,7 +351,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
             // }
             // for(Responsibility r in respModel.entityList){
             //   for(Collaborator c in collabModel.entityList) {
-            //     if (c.respID == r.id) {
+            //     if (c.respID == r.id && ) {
             //       r.collaborators.add(c);
             //     }
             //   }
