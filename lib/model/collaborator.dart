@@ -22,7 +22,6 @@ class Collaborator {
   // int get hashCode => super.hashCode;
 
   Collaborator.fromMap(Map<String, dynamic> map):
-    id = map['id'],
     cardID = map['cardID'],
     respID = map['respID'];
 
@@ -35,8 +34,7 @@ class Collaborator {
   Collaborator();
 
   Map<String, dynamic> toMap() => {
-    'type': 'Collaborator',
-    'id': id,
+    'type': 'collaborator',
     'cardID': cardID,
     'respID': respID
   };

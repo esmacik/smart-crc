@@ -27,14 +27,14 @@ class CRCCard {
     }
   }
 
-  Map<String, dynamic> toMap({required bool includeParent}) => {
+  Map<String, dynamic> toMap({required bool includeParent, required bool includeCollaborators}) => {
     'type': 'card',
     //'id': id,
     'parentStack': includeParent ? parentStack!.id : null,
     'className': className,
     'responsibilities': _responsibilities.map((responsibility) {
       print('Number of responsibilities for this card: ${_responsibilities.length}');
-      return responsibility.toMap();
+      return responsibility.toMap(includeCollaborators: includeCollaborators);
     }).toList(),
     'note': note
   };

@@ -27,7 +27,7 @@ class CRCCardStack {
     'type': 'stack',
     //'id': id,
     'name': name,
-    'cards': _cards.map((card) => card.toMap(includeParent: true)).toList()
+    'cards': _cards.map((card) => card.toMap(includeParent: true, includeCollaborators: true)).toList()
   };
 
   CRCCardStack(this.name, Iterable<CRCCard> cards) {
