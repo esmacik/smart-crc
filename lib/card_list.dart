@@ -115,7 +115,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                   ),
                   ListTile(
                     onTap: () async {
-                      String contents = jsonEncode(card.toMap(includeParent: false));
+                      String contents = jsonEncode(card.toMap(includeParent: false, includeCollaborators: false));
                       String writtenFilePath = await writeFile('${card.className.replaceAll(' ', '_')}_card', contents);
                       print('Card json: $contents');
                       await Share.shareFiles([writtenFilePath]);
@@ -327,7 +327,7 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
         //   respModel.loadData(RESP_DBWorker.db),
         //   collabModel.loadData(COLLAB_DBWorker.db)
         // ]),
-        future: Future.wait([cardModel.loadDataWithForeign(CARD_DBWorker.db, widget._stack.id), RESP_DBWorker.db.getAll()]),
+        future: cardModel.loadDataWithForeign(CARD_DBWorker.db, widget._stack.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             for (CRCCard card in cardModel.entityList) {
@@ -336,26 +336,6 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                 widget._stack.cards.add(card);
               }
             }
-
-            // if (cardModel.entityList.length != widget._stack.cards) {
-            //   widget._stack.cards.clear();
-            //   widget._stack.addAllCards(cardModel.entityList);
-            // }
-
-            // for (CRCCard card in widget._stack.cards) {
-            //   for(Responsibility r in respModel.entityList){
-            //     if(r.parentCardId == card.id){
-            //       card.addResponsibility(r);
-            //     }
-            //   }
-            // }
-            // for(Responsibility r in respModel.entityList){
-            //   for(Collaborator c in collabModel.entityList) {
-            //     if (c.respID == r.id && ) {
-            //       r.collaborators.add(c);
-            //     }
-            //   }
-            // }
             print("E:"+ cardModel.entityList.toString());
             return SafeArea(
               bottom: false,

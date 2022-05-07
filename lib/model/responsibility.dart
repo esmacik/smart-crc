@@ -12,15 +12,19 @@ class Responsibility {
   final List<Collaborator> collaborators = List.empty(growable: true);
 
   Responsibility.fromMap(Map<String, dynamic> map):
-    //id = map['id'],
     name = map['name'],
-    parentCardId = map['parentCardId'];
+    parentCardId = map['parentCardId'] {
+    for (Map<String, dynamic> collabMap in map['collaborators']) {
+      Collaborator collaborator = Collaborator.fromMap(collabMap);
+      collaborators.add(collaborator);
+    }
+  }
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toMap({required bool includeCollaborators}) => {
     'type': 'responsibility',
-    //'id': id,
     'name': name,
     'parentCardId': parentCardId,
+    'collaborators': includeCollaborators ? collaborators.map((element) => element.toMap()).toList() : []
   };
 
   Responsibility();

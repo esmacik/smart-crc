@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_crc/database/COLLAB_DBWorker.dart';
 import 'package:smart_crc/database/RESP_DBWorker.dart';
 import 'package:smart_crc/database/STACK_DBWorker.dart';
+import 'package:smart_crc/model/collaborator.dart';
 import 'package:smart_crc/model/responsibility.dart';
 import 'package:smart_crc/stack_list.dart';
 import 'package:smart_crc/database/CARD_DBWorker.dart';
@@ -85,6 +87,9 @@ class _SmartCRCSate extends State<SmartCRC> {
             for (Responsibility responsibility in card.responsibilities) {
               responsibility.parentCardId = card.id;
               responsibility.id = await RESP_DBWorker.db.create(responsibility);
+              for (Collaborator collaborator in responsibility.collaborators) {
+                collaborator.id = await COLLAB_DBWorker.db.create(collaborator);
+              }
             }
           }
           print('Stack and children cards added to database: ${stack.name}');
