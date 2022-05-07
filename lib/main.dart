@@ -12,8 +12,18 @@ import 'package:smart_crc/model/crc_card_stack.dart';
 import 'model/crc_card.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+
+var initScreen;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  initScreen = await prefs.getInt("initScreen");
+  await prefs.setInt("initScreen", 1);
+  print('initScreen ${initScreen}');
+
   runApp(const SmartCRC());
 }
 
@@ -48,7 +58,12 @@ class _SmartCRCSate extends State<SmartCRC> {
           brightness: Brightness.dark
         )
       ),
-      home: _SmartCRCHomePage(),
+      initialRoute: initScreen == 0 || initScreen == null ? "first" : "/",
+      routes: {
+        '/': (context) => StackList(),
+        "first": (context) => _SmartCRCHomePage(),
+      },
+      //home: _SmartCRCHomePage(),
     );
   }
 
@@ -78,6 +93,13 @@ class _SmartCRCSate extends State<SmartCRC> {
           // int id = await CRC_DBWorker.db.create(card);
           // card.id = id;
           //print('Card name: ${card.className}');
+
+          // card.parentStack = stack;
+          // card.id = await CARD_DBWorker.db.create(card);
+          // for (Responsibility responsibility in card.responsibilities) {
+          //   responsibility.parentCardId = card.id;
+          //   responsibility.id = await RESP_DBWorker.db.create(responsibility);
+          // }
           print('Received a card');
         } else if (mapFromJson['type'] == 'responsibility') {
           //Responsibility responsibility = Responsibility.fromMap(mapFromJson);
@@ -147,7 +169,7 @@ class _SmartCRCHomePage extends StatelessWidget {
                 children: [
                   Image.asset('assets/images/crc.png',scale: 3),
                   Text("SmartCRC", style: const TextStyle(fontSize: 28, color: Color(0xFF607074), fontWeight: FontWeight.w500),),
-                  const SizedBox(height: 50),
+                  SizedBox(height: MediaQuery.of(context).size.height/25),
                   ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(Colors.white),

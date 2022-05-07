@@ -288,10 +288,6 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
             )
           )
         ],
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
       endDrawer: Drawer(
         child: ListView(
