@@ -115,6 +115,13 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
                   ),
                   ListTile(
                     onTap: () async {
+                      await showMoveDialog(context, card).then((value) => setState((){}));
+                    },
+                    title: const Text('Move'),
+                    leading: const Icon(Icons.redo),
+                  ),
+                  ListTile(
+                    onTap: () async {
                       String contents = jsonEncode(card.toMap(includeParent: false, includeCollaborators: false));
                       String writtenFilePath = await writeFile('${card.className.replaceAll(' ', '_')}_card', contents);
                       print('Card json: $contents');
@@ -270,9 +277,15 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
   }
 
   Widget _buildCardList(CRCCardStack stack) {
-    if (stack.cards.isEmpty) {
+    print(stack.id);
+    if (stack.cards.isEmpty && stack.id != -1) {
       return const Center(
         child: Text('Create your first CRC Card with the add button below.'),
+      );
+    }
+    if (stack.cards.isEmpty && stack.id == -1) {
+      return const Center(
+        child: Text('Imported cards will appear here.'),
       );
     }
     if (Preferences.cardListType == CardListType.full) {
@@ -284,68 +297,217 @@ class _CardListState extends State<CardList> with Preferences, FileWriter {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      endDrawer: Drawer(
-        child: ListView(
-          children: [
-            SwitchListTile(
-              title: const Text("Use compact card view"),
-              value: Preferences.cardListType == CardListType.compact ? true : false,
-              onChanged: (switchOn) {
-                setState(() => Preferences.cardListType = switchOn ? CardListType.compact: CardListType.full);
-              }
+    if (widget._stack.id! >= 0) {
+      return Scaffold(
+        endDrawer: Drawer(
+          child: ListView(
+            children: [
+              SwitchListTile(
+                  title: const Text("Use compact card view"),
+                  value: Preferences.cardListType == CardListType.compact
+                      ? true
+                      : false,
+                  onChanged: (switchOn) {
+                    setState(() =>
+                    Preferences.cardListType =
+                    switchOn ? CardListType.compact : CardListType.full);
+                  }
+              )
+            ],
+          ),
+        ),
+        appBar: AppBar(
+          title: const Text('CRC Card List'),
+          actions: [
+            IconButton(
+                onPressed: () => _showHowToDialog(context),
+                icon: const Icon(Icons.info)
+            ),
+            Builder(
+              builder: (context) =>
+                  IconButton(
+                      onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      icon: const Icon(Icons.menu)
+                  ),
             )
           ],
-        ),
-      ),
-      appBar: AppBar(
-        title: const Text('CRC Card List'),
-        actions: [
-          IconButton(
-            onPressed: () => _showHowToDialog(context),
-            icon: const Icon(Icons.info)
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
-              icon: const Icon(Icons.menu)
-            ),
-          )
-        ],
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.of(context).pop(),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () => _onAddCardButtonPressed(context),
-      ),
-      body: FutureBuilder<void>(
-        // future: Future.wait([
-        //   cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id),
-        //   respModel.loadData(RESP_DBWorker.db),
-        //   collabModel.loadData(COLLAB_DBWorker.db)
-        // ]),
-        future: cardModel.loadDataWithForeign(CARD_DBWorker.db, widget._stack.id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            for (CRCCard card in cardModel.entityList) {
-              if (widget._stack.cards.where((element) => element.id == card.id).isEmpty) {
-                card.parentStack = widget._stack;
-                widget._stack.cards.add(card);
+        floatingActionButton:
+        FloatingActionButton(
+          child: const Icon(Icons.add),
+          onPressed: () => _onAddCardButtonPressed(context)
+          ,
+        ),
+        body: FutureBuilder<void>(
+          // future: Future.wait([
+          //   cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id),
+          //   respModel.loadData(RESP_DBWorker.db),
+          //   collabModel.loadData(COLLAB_DBWorker.db)
+          // ]),
+          future: cardModel.loadDataWithForeign(
+              CARD_DBWorker.db, widget._stack.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              for (CRCCard card in cardModel.entityList) {
+                if (widget._stack.cards
+                    .where((element) => element.id == card.id)
+                    .isEmpty) {
+                  card.parentStack = widget._stack;
+                  widget._stack.cards.add(card);
+                }
               }
+              print("E:" + cardModel.entityList.toString());
+              return SafeArea(
+                bottom: false,
+                child: _buildCardList(widget._stack),
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
             }
-            print("E:"+ cardModel.entityList.toString());
-            return SafeArea(
-              bottom: false,
-              child: _buildCardList(widget._stack),
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-    );
+          },
+        ),
+      );
+    }
+    else {
+      return Scaffold(
+        endDrawer: Drawer(
+          child: ListView(
+            children: [
+              SwitchListTile(
+                  title: const Text("Use compact card view"),
+                  value: Preferences.cardListType == CardListType.compact
+                      ? true
+                      : false,
+                  onChanged: (switchOn) {
+                    setState(() =>
+                    Preferences.cardListType =
+                    switchOn ? CardListType.compact : CardListType.full);
+                  }
+              )
+            ],
+          ),
+        ),
+        appBar: AppBar(
+          title: const Text('CRC Card List'),
+          actions: [
+            IconButton(
+                onPressed: () => _showHowToDialog(context),
+                icon: const Icon(Icons.info)
+            ),
+            Builder(
+              builder: (context) =>
+                  IconButton(
+                      onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      icon: const Icon(Icons.menu)
+                  ),
+            )
+          ],
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: FutureBuilder<void>(
+          // future: Future.wait([
+          //   cardModel.loadDataWithForeign(CRC_DBWorker.db, widget._stack.id),
+          //   respModel.loadData(RESP_DBWorker.db),
+          //   collabModel.loadData(COLLAB_DBWorker.db)
+          // ]),
+          future: cardModel.loadDataWithForeign(
+              CARD_DBWorker.db, widget._stack.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              for (CRCCard card in cardModel.entityList) {
+                if (widget._stack.cards
+                    .where((element) => element.id == card.id)
+                    .isEmpty) {
+                  card.parentStack = widget._stack;
+                  widget._stack.cards.add(card);
+                }
+              }
+              print("E:" + cardModel.entityList.toString());
+              return SafeArea(
+                bottom: false,
+                child: _buildCardList(widget._stack),
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+      );
+
+    }
+  }
+
+
+
+  Future<void> showMoveDialog(BuildContext context, CRCCard card) async {
+    var newStack = null;
+    return await showDialog(
+        context: context,
+        builder: (BuildContext context){
+              return AlertDialog(
+                content: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState){
+                 return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Select a stack to move this card to:'),
+                      DropdownButton<CRCCardStack?>(
+                          isExpanded: true,
+                          value: newStack,
+                          items: stackModel.entityList.toSet().where((element) => element.cards.where((element) => element.className == card.className).isEmpty).map((stack) {
+                            return DropdownMenuItem<CRCCardStack?>(
+                              child: Text(stack.name),
+                              value: stack,
+                            );
+                          }).toList()..add(
+                              const DropdownMenuItem<CRCCardStack?>(
+                                  child: Text('New...'),
+                                  value: null
+                              )
+                          ),
+                          onChanged: (selectedStack) {
+                            if(selectedStack != null){
+                              setState(() {
+                                newStack = selectedStack;
+                              });
+                              print('Selected ${selectedStack.name}');
+                            }
+                          }
+                      )
+                ]);}),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(null);
+                      },
+                      child: const Text('Cancel', style: const TextStyle(color: Colors.red),)
+                  ),
+                  TextButton(
+                      onPressed: () async {
+                        card.parentStack = newStack;
+                        await CARD_DBWorker.db.update(card);
+                        widget._stack.cards.remove(card);
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                        setState(() {
+
+                        });
+                      },
+                      child: const Text('Accept')
+                  ),
+
+                ],
+              );
+            },
+          );
   }
 }
+

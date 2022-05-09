@@ -131,7 +131,8 @@ class _SqfliteNotesDBWorker implements CARD_DBWorker {
     return Map<String, dynamic>()
       ..[KEY_ID] = card.id
       ..[KEY_NAME] = card.className
-      ..[KEY_NOTE] = card.note;
+      ..[KEY_NOTE] = card.note
+      ..[KEY_STACK_ID] = card.parentStack?.id;
   }
 
   Future<Database> _init() async {

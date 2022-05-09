@@ -153,8 +153,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                   MaterialPageRoute(
                       builder: (BuildContext context) => CardList(stackModel.entityList.firstWhere((element) => element.id == -1))
                   )
-              );
-              setState(() {});
+              ).then((value) => setState((){}));
             },
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -253,8 +252,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                     MaterialPageRoute(
                         builder: (BuildContext context) => CardList(stackModel.entityList.firstWhere((element) => element.id == -1))
                     )
-                );
-                setState(() {});
+                ).then((value) => setState((){}));
               },
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

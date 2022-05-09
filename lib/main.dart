@@ -71,8 +71,8 @@ class _SmartCRCSate extends State<SmartCRC> {
   }
 
   Future<void> _insertSharedFilesIntoDatabase(List<SharedMediaFile> files) async {
-    ///await stackModel.loadData(STACK_DBWorker.db);
-    // await cardModel.loadData(CARD_DBWorker.db);
+    await stackModel.loadData(STACK_DBWorker.db);
+    await cardModel.loadData(CARD_DBWorker.db);
     // await respModel.loadData(RESP_DBWorker.db);
 
     for (SharedMediaFile file in files) {
@@ -95,8 +95,15 @@ class _SmartCRCSate extends State<SmartCRC> {
           }
           print('Stack and children cards added to database: ${stack.name}');
         } else if (mapFromJson['type'] == 'card') {
-          print('Received a card');
-          importCard = true;
+          CRCCard card = CRCCard.fromMap(mapFromJson, stackModel.entityList.firstWhere((element) => element.id == -1));
+          int id = await CARD_DBWorker.db.create(card);
+          card.id = id;
+          for (Responsibility responsibility in card.responsibilities) {
+            responsibility.parentCardId = card.id;
+            responsibility.id = await RESP_DBWorker.db.create(responsibility);
+            Navigator.of(context).pop(null);
+          }
+          print('Received a card ${card.className}');
         } else if (mapFromJson['type'] == 'responsibility') {
           //Responsibility responsibility = Responsibility.fromMap(mapFromJson);
           //print('Responsibility name: ${responsibility.name}');
@@ -141,68 +148,6 @@ class _SmartCRCSate extends State<SmartCRC> {
 
 class _SmartCRCHomePage extends StatelessWidget {
 
-  void showImportDialog(BuildContext context) async {
-      print("Joe Mama");
-
-      var importStack;
-      AlertDialog assignCard = AlertDialog(
-        title: Text('Card Imported'),
-        content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Select a stack to assign this card to:'),
-              DropdownButton<CRCCardStack>(
-                  items: stackModel.entityList.map((stack) {
-                    return DropdownMenuItem(
-                      child: Text(stack.name),
-                      value: stack,
-                    );
-                  }).toList()..add(
-                      const DropdownMenuItem(
-                          child: Text('New...'),
-                          value: null
-                      )
-                  ),
-                  onChanged: (selectedStack) async {
-                    if(selectedStack != null){
-                    }
-                  }
-              )
-            ]
-        ),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-              child: const Text('Cancel', style: const TextStyle(color: Colors.red),)
-          ),
-          TextButton(
-              onPressed: () {
-                // CRCCard card = CRCCard.fromMap(mapFromJson, selectedStack);
-                // int id = await CARD_DBWorker.db.create(card);
-                // card.id = id;
-                // print('Card name: ${card.className}');
-                // card.parentStack = selectedStack;
-                // card.id = await CARD_DBWorker.db.create(card);
-                // for (Responsibility responsibility in card.responsibilities) {
-                //   responsibility.parentCardId = card.id;
-                //   responsibility.id = await RESP_DBWorker.db.create(responsibility);
-                //
-                //   Navigator.of(context).pop(null);
-                // }
-              },
-              child: const Text('Accept')
-          ),
-
-        ],
-      );
-      await showDialog(context: context,
-          builder: (BuildContext context){
-            return assignCard;
-          }
-      );
-    }
 
   @override
   Widget build(BuildContext context) {
