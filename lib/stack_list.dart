@@ -140,57 +140,109 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   }
 
   Widget _buildFullStackList(Iterable<CRCCardStack> stacks) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(8, 32, 8, 8),
-      itemCount: widget._crcCardStacks.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
-        crossAxisSpacing: 30,
-        mainAxisSpacing: 40,
-        childAspectRatio: 1.75
+    return SingleChildScrollView(
+        child: Column(
+            children: [
+          ElevatedButton(
+            style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
+                fixedSize: MaterialStateProperty.all(Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height/15))),
+            onPressed: ()async {
+              await Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => CardList(stackModel.entityList.firstWhere((element) => element.id == -1))
+                  )
+              );
+              setState(() {});
+            },
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('View Imports'),
+                  Icon(Icons.arrow_right)
+
+        ]),
       ),
-      itemBuilder: (context, index) {
-        CRCCardStack currentStack = widget._crcCardStacks.elementAt(index);
-        return GestureDetector(
-          child: _buildStackWidget(currentStack),
-          onTap: () async {
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (BuildContext context) => CardList(currentStack)
-              )
-            );
-            setState(() {});
-          },
-          onLongPress: () => _showStackSecondaryMenu(context, currentStack),
-        );
-      }
-    );
+        GridView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: const EdgeInsets.fromLTRB(8, 32, 8, 8),
+        itemCount: widget._crcCardStacks.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
+          crossAxisSpacing: 30,
+          mainAxisSpacing: 40,
+          childAspectRatio: 1.75
+        ),
+        itemBuilder: (context, index) {
+          CRCCardStack currentStack = widget._crcCardStacks.elementAt(index);
+          return GestureDetector(
+            child: _buildStackWidget(currentStack),
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) => CardList(currentStack)
+                )
+              );
+              setState(() {});
+            },
+            onLongPress: () => _showStackSecondaryMenu(context, currentStack),
+          );
+        }
+    )]));
   }
 
   Widget _buildCompactStackList(Iterable<CRCCardStack> stacks) {
-    return ListView.separated(
-      separatorBuilder: (context, index) => const Divider(),
-      itemCount: stacks.length,
-      itemBuilder: (context, index) {
-        CRCCardStack currStack = stacks.elementAt(index);
-        return ListTile(
-          title: Text(currStack.name),
-          subtitle: Text('${currStack.numCards} cards'),
-          onTap: () async {
-            await Navigator.of(context).push(MaterialPageRoute(builder: (context) => CardList(currStack)));
-            setState(() {});
-          },
-          onLongPress: () => _showStackSecondaryMenu(context, currStack),
-        );
-      }
-    );
+    return SingleChildScrollView(
+      child: Column(
+          children: [
+            ElevatedButton(
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
+                  fixedSize: MaterialStateProperty.all(Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height/15))),
+              onPressed: ()async {
+                await Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => CardList(stackModel.entityList.firstWhere((element) => element.id == -1))
+                    )
+                );
+                setState(() {});
+              },
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('View Imports'),
+                    Icon(Icons.arrow_right)
+                  ]),
+        ),
+            ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: stacks.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  CRCCardStack currStack = stacks.elementAt(index);
+                  return Container(
+                      color: Colors.white,
+                      child: ListTile(
+                    title: Text(currStack.name),
+                    subtitle: Text('${currStack.numCards} cards'),
+                    onTap: () async {
+                      await Navigator.of(context).push(MaterialPageRoute(builder: (context) => CardList(currStack)));
+                      setState(() {});
+                    },
+                    onLongPress: () => _showStackSecondaryMenu(context, currStack),
+                  ));
+              }
+    )]));
   }
 
   Widget _buildStackList(Iterable<CRCCardStack> stacks) {
     if (stacks.isEmpty) {
       return const Center(
-        child: Text('Create your first CRC Card Stack with the add button below.',
-          textAlign: TextAlign.center),
+        child: Text('Create your first CRC Card Stack with the + button below.',
+          textAlign: TextAlign.center,
+          style:  TextStyle(color: Colors.white,fontSize: 16),
+        ),
       );
     } else if (Preferences.stackListType == StackListType.full) {
       return _buildFullStackList(stacks);
@@ -275,12 +327,13 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
-        title: const Text('Stack List'),
+        centerTitle: true,
+        title: const Text('Stacks', style: TextStyle(fontWeight: FontWeight.w500),),
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.info)
-          ),
+          // IconButton(
+          //   onPressed: () {},
+          //   icon: const Icon(Icons.info)
+          // ),
           Builder(
             builder: (context) => IconButton(
               onPressed: () => Scaffold.of(context).openEndDrawer(),
@@ -307,17 +360,17 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         backgroundColor: Theme.of(context).primaryColor,
         onPressed: () => _onAddButtonPressed(),
       ),
-      body: FutureBuilder<void>(
+      body: FutureBuilder<void> (
         future: stackModel.loadData(STACK_DBWorker.db),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            for (CRCCardStack stack in stackModel.entityList) {
-              if (widget._crcCardStacks.where((element) => element.id == stack.id).isEmpty) {
+            for (CRCCardStack stack in stackModel.entityList.where((element) => element.id! > 0)) {
+             if (widget._crcCardStacks.where((element) => element.id == stack.id).isEmpty) {
                 widget._crcCardStacks.add(stack);
-              }
+             }
             }
             //widget._crcCardStacks.addAll(stackModel.entityList);
-            print("E:"+ stackModel.entityList.toString());
+            //print("E:"+ stackModel.entityList.toString());
             return SafeArea(
               bottom: false,
               child: Container(
@@ -333,8 +386,8 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                     ]
                   )
                 ),
-                child: _buildStackList(widget._crcCardStacks),
-              )
+                child: SingleChildScrollView(
+                     child:  _buildStackList(widget._crcCardStacks))),
             );
           } else {
             return const Center(

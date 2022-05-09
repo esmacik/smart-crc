@@ -221,6 +221,9 @@ class _SqfliteNotesDBWorker implements CARD_DBWorker {
                   "FOREIGN KEY(cardID) REFERENCES cards(_id) ON DELETE CASCADE"
                   ");"
           );
+          await db.execute(
+              "INSERT INTO stacks VALUES (-1, 'Imports');"
+          );
           print('naynay');
         }
     );
