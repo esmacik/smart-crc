@@ -140,6 +140,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   }
 
   Widget _buildFullStackList(Iterable<CRCCardStack> stacks) {
+    // widget._crcCardStacks.forEach((element) {print(element.id);});
     return SingleChildScrollView(
         child: Column(
             children: [
@@ -167,7 +168,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         physics: NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         padding: const EdgeInsets.fromLTRB(8, 32, 8, 8),
-        itemCount: widget._crcCardStacks.length,
+        itemCount: widget._crcCardStacks.length-1,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 1 : 2,
           crossAxisSpacing: 30,
@@ -175,7 +176,8 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
           childAspectRatio: 1.75
         ),
         itemBuilder: (context, index) {
-          CRCCardStack currentStack = widget._crcCardStacks.elementAt(index);
+          var list = List.generate(widget._crcCardStacks.length-1, (index) => index+1);
+          CRCCardStack currentStack = widget._crcCardStacks.elementAt(list[index]);
           return GestureDetector(
             child: _buildStackWidget(currentStack),
             onTap: () async {
@@ -217,10 +219,11 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
         ),
             ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: stacks.length,
+                itemCount: stacks.length-1,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  CRCCardStack currStack = stacks.elementAt(index);
+                  var list = List.generate(widget._crcCardStacks.length-1, (index) => index+1);
+                  CRCCardStack currStack = widget._crcCardStacks.elementAt(list[index]);
                   return Container(
                       color: Colors.white,
                       child: ListTile(
@@ -237,13 +240,35 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
   }
 
   Widget _buildStackList(Iterable<CRCCardStack> stacks) {
-    if (stacks.isEmpty) {
-      return const Center(
-        child: Text('Create your first CRC Card Stack with the + button below.',
+    if (stacks.length == 1) {
+      return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            ElevatedButton(
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
+                  fixedSize: MaterialStateProperty.all(Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height/15))),
+              onPressed: ()async {
+                await Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => CardList(stackModel.entityList.firstWhere((element) => element.id == -1))
+                    )
+                );
+                setState(() {});
+              },
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('View Imports'),
+                    Icon(Icons.arrow_right)
+                  ]),
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height/3,),
+            Text('Create your first CRC Card Stack with the + button below.',
           textAlign: TextAlign.center,
           style:  TextStyle(color: Colors.white,fontSize: 16),
         ),
-      );
+      ]);
     } else if (Preferences.stackListType == StackListType.full) {
       return _buildFullStackList(stacks);
     } else {
@@ -358,13 +383,14 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme.of(context).primaryColorLight,
         onPressed: () => _onAddButtonPressed(),
       ),
       body: FutureBuilder<void> (
         future: stackModel.loadData(STACK_DBWorker.db),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            for (CRCCardStack stack in stackModel.entityList.where((element) => element.id! > 0)) {
+            for (CRCCardStack stack in stackModel.entityList) {
              if (widget._crcCardStacks.where((element) => element.id == stack.id).isEmpty) {
                 widget._crcCardStacks.add(stack);
              }
@@ -373,7 +399,7 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
             //print("E:"+ stackModel.entityList.toString());
             return SafeArea(
               bottom: false,
-              child: Container(
+              child: SizedBox.expand( child: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin:  Alignment.topCenter,
@@ -386,9 +412,8 @@ class _StackListState extends State<StackList> with Preferences, FileWriter {
                     ]
                   )
                 ),
-                child: SingleChildScrollView(
-                     child:  _buildStackList(widget._crcCardStacks))),
-            );
+                  child: _buildStackList(widget._crcCardStacks))
+            ));
           } else {
             return const Center(
               child: CircularProgressIndicator(),
